@@ -1,0 +1,350 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: TwoFactorTotp 0.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Authentication code"
+msgstr "Authentication code"
+
+msgid "The 6-digit code from your authenticator app."
+msgstr "The 6-digit code from your authenticator app."
+
+#, php-format
+msgid "Remember this device for %d days"
+msgstr "Remember this device for %d days"
+
+msgid "Only tick this on a device that is yours alone."
+msgstr "Only tick this on a device that is yours alone."
+
+msgid "Verify"
+msgstr "Verify"
+
+msgid "Issuer name"
+msgstr "Issuer name"
+
+msgid "The name shown next to the account in the authenticator app. Leave empty to use the installation title."
+msgstr "The name shown next to the account in the authenticator app. Leave empty to use the installation title."
+
+msgid "Require two-factor authentication for these roles"
+msgstr "Require two-factor authentication for these roles"
+
+msgid "Users with a selected role must set up two-factor authentication before they can use the admin interface. Existing sessions are not affected."
+msgstr "Users with a selected role must set up two-factor authentication before they can use the admin interface. Existing sessions are not affected."
+
+msgid "Remember a device for (days)"
+msgstr "Remember a device for (days)"
+
+msgid "How long a device stays trusted after the user ticks \"remember this device\". Set to 0 to remove the option entirely."
+msgstr "How long a device stays trusted after the user ticks \"remember this device\". Set to 0 to remove the option entirely."
+
+msgid "Accepted time steps either side"
+msgstr "Accepted time steps either side"
+
+msgid "How much clock drift between server and phone to tolerate, in 30-second steps. 1 is the usual value; raising it widens the window in which a code stays valid."
+msgstr "How much clock drift between server and phone to tolerate, in 30-second steps. 1 is the usual value; raising it widens the window in which a code stays valid."
+
+msgid "Time allowed to enter the code (seconds)"
+msgstr "Time allowed to enter the code (seconds)"
+
+msgid "How long a password-verified login may wait at the code screen before it is discarded."
+msgstr "How long a password-verified login may wait at the code screen before it is discarded."
+
+msgid "Wrong codes allowed per login"
+msgstr "Wrong codes allowed per login"
+
+msgid "After this many wrong codes the login is discarded and the user starts again from the password screen."
+msgstr "After this many wrong codes the login is discarded and the user starts again from the password screen."
+
+msgid "Confirm"
+msgstr "Confirm"
+
+msgid "Your password"
+msgstr "Your password"
+
+msgid "Code from your app"
+msgstr "Code from your app"
+
+msgid "Enter the 6-digit code your authenticator app shows now."
+msgstr "Enter the 6-digit code your authenticator app shows now."
+
+msgid "Enable two-factor authentication"
+msgstr "Enable two-factor authentication"
+
+msgid "Recovery code"
+msgstr "Recovery code"
+
+msgid "One of the codes you saved when you set up two-factor authentication. Each code works once."
+msgstr "One of the codes you saved when you set up two-factor authentication. Each code works once."
+
+msgid "Use recovery code"
+msgstr "Use recovery code"
+
+#, php-format
+msgid "You have %d recovery codes left. Generate a new set from your user page."
+msgstr "You have %d recovery codes left. Generate a new set from your user page."
+
+#, php-format
+msgid "Recovery code accepted. You have %d left."
+msgstr "Recovery code accepted. You have %d left."
+
+msgid "Successfully logged in"
+msgstr "Successfully logged in"
+
+msgid "Too many incorrect codes. Please log in again."
+msgstr "Too many incorrect codes. Please log in again."
+
+#, php-format
+msgid "Invalid code. %d attempts remaining."
+msgstr "Invalid code. %d attempts remaining."
+
+msgid "Your login timed out. Please log in again."
+msgstr "Your login timed out. Please log in again."
+
+msgid "Email or password is invalid"
+msgstr "Email or password is invalid"
+
+msgid "Two-factor authentication is already enabled for your account."
+msgstr "Two-factor authentication is already enabled for your account."
+
+msgid "Two-factor authentication is now enabled."
+msgstr "Two-factor authentication is now enabled."
+
+msgid "That code was not correct. Check your app and try again."
+msgstr "That code was not correct. Check your app and try again."
+
+msgid "Two-factor authentication is required for your role and cannot be turned off."
+msgstr "Two-factor authentication is required for your role and cannot be turned off."
+
+msgid "Disable two-factor authentication"
+msgstr "Disable two-factor authentication"
+
+msgid "The password entered was invalid."
+msgstr "The password entered was invalid."
+
+msgid "Two-factor authentication is now disabled."
+msgstr "Two-factor authentication is now disabled."
+
+msgid "Generate new recovery codes"
+msgstr "Generate new recovery codes"
+
+msgid "New recovery codes generated. Your previous codes no longer work."
+msgstr "New recovery codes generated. Your previous codes no longer work."
+
+msgid "Invalid or missing CSRF token"
+msgstr "Invalid or missing CSRF token"
+
+msgid "Device revoked."
+msgstr "Device revoked."
+
+#, php-format
+msgid "Revoked %d devices."
+msgstr "Revoked %d devices."
+
+msgid "Reset two-factor authentication"
+msgstr "Reset two-factor authentication"
+
+#, php-format
+msgid "Two-factor authentication was reset for %s."
+msgstr "Two-factor authentication was reset for %s."
+
+msgid "The TwoFactorAuth module is active. Both modules replace the login controller, so they cannot run together. Disable TwoFactorAuth first."
+msgstr "The TwoFactorAuth module is active. Both modules replace the login controller, so they cannot run together. Disable TwoFactorAuth first."
+
+msgid "Two-factor authentication is required for your role. Set it up to continue."
+msgstr "Two-factor authentication is required for your role. Set it up to continue."
+
+msgid "Two-factor authentication"
+msgstr "Two-factor authentication"
+
+#, php-format
+msgid "%d recovery codes remaining."
+msgstr "%d recovery codes remaining."
+
+#, php-format
+msgid "%d trusted devices."
+msgstr "%d trusted devices."
+
+#, php-format
+msgid "%s does not have two-factor authentication enabled. There is nothing to reset."
+msgstr "%s does not have two-factor authentication enabled. There is nothing to reset."
+
+msgid "(this browser)"
+msgstr "(this browser)"
+
+msgid "1. Install an authenticator app"
+msgstr "1. Install an authenticator app"
+
+msgid "2. Scan this code"
+msgstr "2. Scan this code"
+
+msgid "3. Confirm"
+msgstr "3. Confirm"
+
+msgid "Add a second step to your login using an authenticator app on your phone, so a stolen password is not enough on its own."
+msgstr "Add a second step to your login using an authenticator app on your phone, so a stolen password is not enough on its own."
+
+msgid "Added"
+msgstr "Added"
+
+msgid "An administrator has reset two-factor authentication on your account. You can log in with your password alone until you set it up again. If you did not expect this, contact your administrator immediately."
+msgstr "An administrator has reset two-factor authentication on your account. You can log in with your password alone until you set it up again. If you did not expect this, contact your administrator immediately."
+
+msgid "Any TOTP app works — for example Google Authenticator, Aegis, FreeOTP, 1Password or Bitwarden."
+msgstr "Any TOTP app works — for example Google Authenticator, Aegis, FreeOTP, 1Password or Bitwarden."
+
+msgid "Back to the code from my app"
+msgstr "Back to the code from my app"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Can’t scan? Enter this key by hand"
+msgstr "Can’t scan? Enter this key by hand"
+
+msgid "Confirm with your password to continue."
+msgstr "Confirm with your password to continue."
+
+msgid "Copied"
+msgstr "Copied"
+
+msgid "Copy to clipboard"
+msgstr "Copy to clipboard"
+
+msgid "Device"
+msgstr "Device"
+
+msgid "Enter one of the recovery codes you saved when you set up two-factor authentication. Each code works only once."
+msgstr "Enter one of the recovery codes you saved when you set up two-factor authentication. Each code works only once."
+
+msgid "Enter the 6-digit code from your authenticator app to finish logging in."
+msgstr "Enter the 6-digit code from your authenticator app to finish logging in."
+
+msgid "Enter the code your app shows now. This proves the app was set up correctly before it becomes required to log in."
+msgstr "Enter the code your app shows now. This proves the app was set up correctly before it becomes required to log in."
+
+msgid "I have saved my recovery codes"
+msgstr "I have saved my recovery codes"
+
+msgid "It is required for your role — you will be asked to set it up on your next request."
+msgstr "It is required for your role — you will be asked to set it up on your next request."
+
+msgid "JavaScript is required to draw the QR code. Use the setup key below instead."
+msgstr "JavaScript is required to draw the QR code. Use the setup key below instead."
+
+msgid "Last used"
+msgstr "Last used"
+
+msgid "Manage trusted devices"
+msgstr "Manage trusted devices"
+
+msgid "No trusted devices."
+msgstr "No trusted devices."
+
+#, php-format
+msgid "Only %d recovery codes left. Generate a new set so you are not locked out if you lose your phone."
+msgstr "Only %d recovery codes left. Generate a new set so you are not locked out if you lose your phone."
+
+msgid "Only the account holder can set this up — nobody else can see or change their secret."
+msgstr "Only the account holder can set this up — nobody else can see or change their secret."
+
+msgid "Print"
+msgstr "Print"
+
+msgid "QR code for setting up two-factor authentication"
+msgstr "QR code for setting up two-factor authentication"
+
+msgid "Revoke"
+msgstr "Revoke"
+
+msgid "Revoke all devices"
+msgstr "Revoke all devices"
+
+#, php-format
+msgid "Server time is %s. If this is more than about half a minute away from real time, every code will be rejected — check that NTP is running."
+msgstr "Server time is %s. If this is more than about half a minute away from real time, every code will be rejected — check that NTP is running."
+
+msgid "Set up two-factor authentication"
+msgstr "Set up two-factor authentication"
+
+msgid "These browsers skip the code screen until their trust expires. Revoke any you no longer use or recognise."
+msgstr "These browsers skip the code screen until their trust expires. Revoke any you no longer use or recognise."
+
+msgid "These codes are shown once and cannot be retrieved again. Save them somewhere safe and away from the device running your authenticator app — they are the only way back in if you lose your phone."
+msgstr "These codes are shown once and cannot be retrieved again. Save them somewhere safe and away from the device running your authenticator app — they are the only way back in if you lose your phone."
+
+msgid "This removes the second factor from another person’s account. Only do this when you are certain who you are talking to — anyone who can pass this check can take the account over with the password alone."
+msgstr "This removes the second factor from another person’s account. Only do this when you are certain who you are talking to — anyone who can pass this check can take the account over with the password alone."
+
+msgid "This removes the second factor from your account, deletes your recovery codes, and signs out every device you had marked as trusted. Your account will be protected by its password alone."
+msgstr "This removes the second factor from your account, deletes your recovery codes, and signs out every device you had marked as trusted. Your account will be protected by its password alone."
+
+msgid "Trusted devices"
+msgstr "Trusted devices"
+
+msgid "Trusted until"
+msgstr "Trusted until"
+
+msgid "Two-factor authentication is enabled for this user."
+msgstr "Two-factor authentication is enabled for this user."
+
+msgid "Two-factor authentication is enabled."
+msgstr "Two-factor authentication is enabled."
+
+msgid "Two-factor authentication is not enabled for this user."
+msgstr "Two-factor authentication is not enabled for this user."
+
+msgid "Two-factor authentication is not enabled."
+msgstr "Two-factor authentication is not enabled."
+
+msgid "Two-factor authentication is required for your role, so it cannot be turned off."
+msgstr "Two-factor authentication is required for your role, so it cannot be turned off."
+
+msgid "Two-factor authentication is required for your role. You cannot use the admin interface until you finish this."
+msgstr "Two-factor authentication is required for your role. You cannot use the admin interface until you finish this."
+
+#, php-format
+msgid "Two-factor authentication, all recovery codes and all trusted devices will be removed for %s. They will be emailed about it, and the action is written to the log."
+msgstr "Two-factor authentication, all recovery codes and all trusted devices will be removed for %s. They will be emailed about it, and the action is written to the log."
+
+msgid "Two-step verification"
+msgstr "Two-step verification"
+
+msgid "Type: time-based · Digits: 6 · Interval: 30 seconds · Algorithm: SHA1"
+msgstr "Type: time-based · Digits: 6 · Interval: 30 seconds · Algorithm: SHA1"
+
+msgid "Unknown device"
+msgstr "Unknown device"
+
+msgid "Use a recovery code"
+msgstr "Use a recovery code"
+
+msgid "Use a recovery code instead"
+msgstr "Use a recovery code instead"
+
+msgid "Use this when the person has lost their phone and their recovery codes. They will be emailed, and the reset is logged."
+msgstr "Use this when the person has lost their phone and their recovery codes. They will be emailed, and the reset is logged."
+
+msgid "Users"
+msgstr "Users"
+
+msgid "Users enable two-factor authentication themselves, from the \"Two-factor authentication\" tab on their own user page. These settings apply to everyone."
+msgstr "Users enable two-factor authentication themselves, from the \"Two-factor authentication\" tab on their own user page. These settings apply to everyone."
+
+msgid "You are asked for a code from your authenticator app when you log in."
+msgstr "You are asked for a code from your authenticator app when you log in."
+
+msgid "Your recovery codes"
+msgstr "Your recovery codes"
+
+#, php-format
+msgid "[%s] Two-factor authentication was reset"
+msgstr "[%s] Two-factor authentication was reset"
+

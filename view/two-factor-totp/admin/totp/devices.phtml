@@ -1,0 +1,66 @@
+<?php
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+$this->htmlElement('body')->appendAttribute('class', 'two-factor-totp devices');
+$revokeUrl = $this->url('admin/two-factor', ['action' => 'revoke-device']);
+$formElement = $this->plugin('formElement');
+// Omeka's Csrf form initializer names the element after the form
+// (Omeka\Form\Initializer\Csrf), so a form pulled from the form manager gets
+// "confirmform_csrf" rather than a bare "csrf".
+$csrfName = $confirmForm->getName() ? $confirmForm->getName() . '_csrf' : 'csrf';
+$csrf = $confirmForm->get($csrfName);
+?>
+<?php echo $this->pageTitle($translate('Trusted devices'), 1, $translate('Users')); ?>
+
+<p><?php echo $translate('These browsers skip the code screen until their trust expires. Revoke any you no longer use or recognise.'); ?></p>
+
+<?php if (!count($devices)): ?>
+<p><em><?php echo $translate('No trusted devices.'); ?></em></p>
+<?php else: ?>
+
+<table class="tablesaw tablesaw-stack" data-tablesaw-mode="stack">
+    <thead>
+        <tr>
+            <th><?php echo $translate('Device'); ?></th>
+            <th><?php echo $translate('Added'); ?></th>
+            <th><?php echo $translate('Last used'); ?></th>
+            <th><?php echo $translate('Trusted until'); ?></th>
+            <th><?php echo $translate('Revoke'); ?></th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($devices as $device): ?>
+        <?php $isCurrent = $currentDevice && $currentDevice->getId() === $device->getId(); ?>
+        <tr>
+            <td>
+                <?php echo $escape($device->getLabel() ?: $translate('Unknown device')); ?>
+                <?php if ($isCurrent): ?>
+                    <span class="totp-current-device"><?php echo $translate('(this browser)'); ?></span>
+                <?php endif; ?>
+            </td>
+            <td><?php echo $device->getCreated() ? $escape($device->getCreated()->format('Y-m-d H:i')) : '—'; ?></td>
+            <td><?php echo $device->getLastUsedAt() ? $escape($device->getLastUsedAt()->format('Y-m-d H:i')) : '—'; ?></td>
+            <td><?php echo $device->getExpires() ? $escape($device->getExpires()->format('Y-m-d')) : '—'; ?></td>
+            <td>
+                <form method="post" action="<?php echo $escape($revokeUrl); ?>">
+                    <input type="hidden" name="device_id" value="<?php echo (int) $device->getId(); ?>">
+                    <?php echo $formElement($csrf); ?>
+                    <button type="submit"><?php echo $translate('Revoke'); ?></button>
+                </form>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+    </tbody>
+</table>
+
+<form method="post" action="<?php echo $escape($revokeUrl); ?>" class="totp-revoke-all">
+    <?php echo $formElement($csrf); ?>
+    <button type="submit"><?php echo $translate('Revoke all devices'); ?></button>
+</form>
+
+<?php endif; ?>
+
+<style>
+.totp-current-device { color: #666; font-size: .9em; }
+.totp-revoke-all { margin-top: 1.5em; }
+</style>

@@ -1,0 +1,33 @@
+<?php
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+$this->htmlElement('body')->appendAttribute('class', 'login two-factor-totp');
+?>
+<h1><?php echo $translate('Two-step verification'); ?></h1>
+
+<p class="two-factor-intro">
+    <?php echo $translate('Enter the 6-digit code from your authenticator app to finish logging in.'); ?>
+</p>
+
+<?php echo $this->form($form); ?>
+
+<p class="two-factor-alternatives">
+    <?php echo $this->hyperlink($translate('Use a recovery code instead'), $recoveryUrl); ?>
+    &nbsp;·&nbsp;
+    <?php echo $this->hyperlink($translate('Cancel'), $this->url('two-factor', ['action' => 'cancel'])); ?>
+</p>
+
+<style>
+/* Keep the code field big and monospaced: it is read off a phone screen. */
+.two-factor-totp #totp-code {
+    font-family: monospace;
+    font-size: 1.6em;
+    letter-spacing: 0.35em;
+    text-align: center;
+    max-width: 8em;
+}
+.two-factor-alternatives {
+    margin-top: 1.5em;
+    font-size: 0.9em;
+}
+</style>

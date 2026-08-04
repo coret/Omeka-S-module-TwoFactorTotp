@@ -1,0 +1,350 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: TwoFactorTotp 0.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: Dutch\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: nl_NL\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Authentication code"
+msgstr "Authenticatiecode"
+
+msgid "The 6-digit code from your authenticator app."
+msgstr "De 6-cijferige code uit je authenticator-app."
+
+#, php-format
+msgid "Remember this device for %d days"
+msgstr "Dit apparaat %d dagen onthouden"
+
+msgid "Only tick this on a device that is yours alone."
+msgstr "Vink dit alleen aan op een apparaat dat alleen van jou is."
+
+msgid "Verify"
+msgstr "Verifiëren"
+
+msgid "Issuer name"
+msgstr "Naam van de uitgever"
+
+msgid "The name shown next to the account in the authenticator app. Leave empty to use the installation title."
+msgstr "De naam die naast het account in de authenticator-app wordt getoond. Laat leeg om de titel van de installatie te gebruiken."
+
+msgid "Require two-factor authentication for these roles"
+msgstr "Tweefactorauthenticatie verplichten voor deze rollen"
+
+msgid "Users with a selected role must set up two-factor authentication before they can use the admin interface. Existing sessions are not affected."
+msgstr "Gebruikers met een geselecteerde rol moeten tweefactorauthenticatie instellen voordat ze de beheeromgeving kunnen gebruiken. Bestaande sessies worden niet beïnvloed."
+
+msgid "Remember a device for (days)"
+msgstr "Een apparaat onthouden gedurende (dagen)"
+
+msgid "How long a device stays trusted after the user ticks \"remember this device\". Set to 0 to remove the option entirely."
+msgstr "Hoe lang een apparaat vertrouwd blijft nadat de gebruiker \"dit apparaat onthouden\" aanvinkt. Zet op 0 om de optie helemaal te verwijderen."
+
+msgid "Accepted time steps either side"
+msgstr "Toegestane tijdstappen aan weerszijden"
+
+msgid "How much clock drift between server and phone to tolerate, in 30-second steps. 1 is the usual value; raising it widens the window in which a code stays valid."
+msgstr "Hoeveel klokverschil tussen server en telefoon wordt getolereerd, in stappen van 30 seconden. 1 is de gebruikelijke waarde; verhogen vergroot het venster waarin een code geldig blijft."
+
+msgid "Time allowed to enter the code (seconds)"
+msgstr "Toegestane tijd om de code in te voeren (seconden)"
+
+msgid "How long a password-verified login may wait at the code screen before it is discarded."
+msgstr "Hoe lang een met wachtwoord geverifieerde login bij het codescherm mag wachten voordat hij wordt weggegooid."
+
+msgid "Wrong codes allowed per login"
+msgstr "Toegestane foute codes per login"
+
+msgid "After this many wrong codes the login is discarded and the user starts again from the password screen."
+msgstr "Na dit aantal foute codes wordt de login weggegooid en begint de gebruiker opnieuw bij het wachtwoordscherm."
+
+msgid "Confirm"
+msgstr "Bevestigen"
+
+msgid "Your password"
+msgstr "Je wachtwoord"
+
+msgid "Code from your app"
+msgstr "Code uit je app"
+
+msgid "Enter the 6-digit code your authenticator app shows now."
+msgstr "Voer de 6-cijferige code in die je authenticator-app nu toont."
+
+msgid "Enable two-factor authentication"
+msgstr "Tweefactorauthenticatie inschakelen"
+
+msgid "Recovery code"
+msgstr "Herstelcode"
+
+msgid "One of the codes you saved when you set up two-factor authentication. Each code works once."
+msgstr "Een van de codes die je hebt opgeslagen toen je tweefactorauthenticatie instelde. Elke code werkt één keer."
+
+msgid "Use recovery code"
+msgstr "Herstelcode gebruiken"
+
+#, php-format
+msgid "You have %d recovery codes left. Generate a new set from your user page."
+msgstr "Je hebt nog %d herstelcodes. Genereer een nieuwe set via je gebruikerspagina."
+
+#, php-format
+msgid "Recovery code accepted. You have %d left."
+msgstr "Herstelcode geaccepteerd. Je hebt er nog %d."
+
+msgid "Successfully logged in"
+msgstr "Succesvol ingelogd"
+
+msgid "Too many incorrect codes. Please log in again."
+msgstr "Te veel onjuiste codes. Log opnieuw in."
+
+#, php-format
+msgid "Invalid code. %d attempts remaining."
+msgstr "Ongeldige code. Nog %d pogingen over."
+
+msgid "Your login timed out. Please log in again."
+msgstr "Je login is verlopen. Log opnieuw in."
+
+msgid "Email or password is invalid"
+msgstr "E-mailadres of wachtwoord is ongeldig"
+
+msgid "Two-factor authentication is already enabled for your account."
+msgstr "Tweefactorauthenticatie is al ingeschakeld voor je account."
+
+msgid "Two-factor authentication is now enabled."
+msgstr "Tweefactorauthenticatie is nu ingeschakeld."
+
+msgid "That code was not correct. Check your app and try again."
+msgstr "Die code was niet juist. Controleer je app en probeer het opnieuw."
+
+msgid "Two-factor authentication is required for your role and cannot be turned off."
+msgstr "Tweefactorauthenticatie is verplicht voor jouw rol en kan niet worden uitgeschakeld."
+
+msgid "Disable two-factor authentication"
+msgstr "Tweefactorauthenticatie uitschakelen"
+
+msgid "The password entered was invalid."
+msgstr "Het ingevoerde wachtwoord was ongeldig."
+
+msgid "Two-factor authentication is now disabled."
+msgstr "Tweefactorauthenticatie is nu uitgeschakeld."
+
+msgid "Generate new recovery codes"
+msgstr "Nieuwe herstelcodes genereren"
+
+msgid "New recovery codes generated. Your previous codes no longer work."
+msgstr "Nieuwe herstelcodes gegenereerd. Je vorige codes werken niet meer."
+
+msgid "Invalid or missing CSRF token"
+msgstr "Ongeldig of ontbrekend CSRF-token"
+
+msgid "Device revoked."
+msgstr "Apparaat ingetrokken."
+
+#, php-format
+msgid "Revoked %d devices."
+msgstr "%d apparaten ingetrokken."
+
+msgid "Reset two-factor authentication"
+msgstr "Tweefactorauthenticatie resetten"
+
+#, php-format
+msgid "Two-factor authentication was reset for %s."
+msgstr "Tweefactorauthenticatie is gereset voor %s."
+
+msgid "The TwoFactorAuth module is active. Both modules replace the login controller, so they cannot run together. Disable TwoFactorAuth first."
+msgstr "De module TwoFactorAuth is actief. Beide modules vervangen de logincontroller, dus ze kunnen niet samen draaien. Schakel eerst TwoFactorAuth uit."
+
+msgid "Two-factor authentication is required for your role. Set it up to continue."
+msgstr "Tweefactorauthenticatie is verplicht voor jouw rol. Stel het in om door te gaan."
+
+msgid "Two-factor authentication"
+msgstr "Tweefactorauthenticatie"
+
+#, php-format
+msgid "%d recovery codes remaining."
+msgstr "Nog %d herstelcodes."
+
+#, php-format
+msgid "%d trusted devices."
+msgstr "%d vertrouwde apparaten."
+
+#, php-format
+msgid "%s does not have two-factor authentication enabled. There is nothing to reset."
+msgstr "Bij %s is tweefactorauthenticatie niet ingeschakeld. Er is niets te resetten."
+
+msgid "(this browser)"
+msgstr "(deze browser)"
+
+msgid "1. Install an authenticator app"
+msgstr "1. Installeer een authenticator-app"
+
+msgid "2. Scan this code"
+msgstr "2. Scan deze code"
+
+msgid "3. Confirm"
+msgstr "3. Bevestig"
+
+msgid "Add a second step to your login using an authenticator app on your phone, so a stolen password is not enough on its own."
+msgstr "Voeg een tweede stap toe aan je login met een authenticator-app op je telefoon, zodat een gestolen wachtwoord op zichzelf niet genoeg is."
+
+msgid "Added"
+msgstr "Toegevoegd"
+
+msgid "An administrator has reset two-factor authentication on your account. You can log in with your password alone until you set it up again. If you did not expect this, contact your administrator immediately."
+msgstr "Een beheerder heeft tweefactorauthenticatie op je account gereset. Je kunt met alleen je wachtwoord inloggen totdat je het opnieuw instelt. Als je dit niet verwachtte, neem dan onmiddellijk contact op met je beheerder."
+
+msgid "Any TOTP app works — for example Google Authenticator, Aegis, FreeOTP, 1Password or Bitwarden."
+msgstr "Elke TOTP-app werkt — bijvoorbeeld Google Authenticator, Aegis, FreeOTP, 1Password of Bitwarden."
+
+msgid "Back to the code from my app"
+msgstr "Terug naar de code uit mijn app"
+
+msgid "Cancel"
+msgstr "Annuleer"
+
+msgid "Can’t scan? Enter this key by hand"
+msgstr "Kun je niet scannen? Voer deze sleutel handmatig in"
+
+msgid "Confirm with your password to continue."
+msgstr "Bevestig met je wachtwoord om door te gaan."
+
+msgid "Copied"
+msgstr "Gekopieerd"
+
+msgid "Copy to clipboard"
+msgstr "Kopieer naar klembord"
+
+msgid "Device"
+msgstr "Apparaat"
+
+msgid "Enter one of the recovery codes you saved when you set up two-factor authentication. Each code works only once."
+msgstr "Voer een van de herstelcodes in die je hebt opgeslagen toen je tweefactorauthenticatie instelde. Elke code werkt maar één keer."
+
+msgid "Enter the 6-digit code from your authenticator app to finish logging in."
+msgstr "Voer de 6-cijferige code uit je authenticator-app in om het inloggen af te ronden."
+
+msgid "Enter the code your app shows now. This proves the app was set up correctly before it becomes required to log in."
+msgstr "Voer de code in die je app nu toont. Zo staat vast dat de app goed is ingesteld, voordat hij nodig is om in te loggen."
+
+msgid "I have saved my recovery codes"
+msgstr "Ik heb mijn herstelcodes opgeslagen"
+
+msgid "It is required for your role — you will be asked to set it up on your next request."
+msgstr "Het is verplicht voor jouw rol — bij je volgende verzoek wordt gevraagd het in te stellen."
+
+msgid "JavaScript is required to draw the QR code. Use the setup key below instead."
+msgstr "JavaScript is nodig om de QR-code te tekenen. Gebruik in plaats daarvan de sleutel hieronder."
+
+msgid "Last used"
+msgstr "Laatst gebruikt"
+
+msgid "Manage trusted devices"
+msgstr "Vertrouwde apparaten beheren"
+
+msgid "No trusted devices."
+msgstr "Geen vertrouwde apparaten."
+
+#, php-format
+msgid "Only %d recovery codes left. Generate a new set so you are not locked out if you lose your phone."
+msgstr "Nog maar %d herstelcodes over. Genereer een nieuwe set zodat je niet buitengesloten raakt als je je telefoon kwijtraakt."
+
+msgid "Only the account holder can set this up — nobody else can see or change their secret."
+msgstr "Alleen de accounthouder kan dit instellen — niemand anders kan die sleutel zien of wijzigen."
+
+msgid "Print"
+msgstr "Afdrukken"
+
+msgid "QR code for setting up two-factor authentication"
+msgstr "QR-code om tweefactorauthenticatie in te stellen"
+
+msgid "Revoke"
+msgstr "Intrekken"
+
+msgid "Revoke all devices"
+msgstr "Alle apparaten intrekken"
+
+#, php-format
+msgid "Server time is %s. If this is more than about half a minute away from real time, every code will be rejected — check that NTP is running."
+msgstr "De servertijd is %s. Wijkt dit meer dan ongeveer een halve minuut af van de echte tijd, dan wordt elke code geweigerd — controleer of NTP draait."
+
+msgid "Set up two-factor authentication"
+msgstr "Tweefactorauthenticatie instellen"
+
+msgid "These browsers skip the code screen until their trust expires. Revoke any you no longer use or recognise."
+msgstr "Deze browsers slaan het codescherm over totdat hun vertrouwen verloopt. Trek de apparaten in die je niet meer gebruikt of herkent."
+
+msgid "These codes are shown once and cannot be retrieved again. Save them somewhere safe and away from the device running your authenticator app — they are the only way back in if you lose your phone."
+msgstr "Deze codes worden één keer getoond en kunnen daarna niet meer worden opgehaald. Bewaar ze op een veilige plek, los van het apparaat waarop je authenticator-app draait — ze zijn de enige manier om weer binnen te komen als je je telefoon kwijtraakt."
+
+msgid "This removes the second factor from another person’s account. Only do this when you are certain who you are talking to — anyone who can pass this check can take the account over with the password alone."
+msgstr "Hiermee verwijder je de tweede factor van het account van iemand anders. Doe dit alleen als je zeker weet met wie je spreekt — wie deze controle passeert, kan het account met alleen het wachtwoord overnemen."
+
+msgid "This removes the second factor from your account, deletes your recovery codes, and signs out every device you had marked as trusted. Your account will be protected by its password alone."
+msgstr "Hiermee verwijder je de tweede factor van je account, worden je herstelcodes gewist en worden alle apparaten die je als vertrouwd had gemarkeerd uitgelogd. Je account wordt dan alleen nog door het wachtwoord beschermd."
+
+msgid "Trusted devices"
+msgstr "Vertrouwde apparaten"
+
+msgid "Trusted until"
+msgstr "Vertrouwd tot"
+
+msgid "Two-factor authentication is enabled for this user."
+msgstr "Tweefactorauthenticatie is ingeschakeld voor deze gebruiker."
+
+msgid "Two-factor authentication is enabled."
+msgstr "Tweefactorauthenticatie is ingeschakeld."
+
+msgid "Two-factor authentication is not enabled for this user."
+msgstr "Tweefactorauthenticatie is niet ingeschakeld voor deze gebruiker."
+
+msgid "Two-factor authentication is not enabled."
+msgstr "Tweefactorauthenticatie is niet ingeschakeld."
+
+msgid "Two-factor authentication is required for your role, so it cannot be turned off."
+msgstr "Tweefactorauthenticatie is verplicht voor jouw rol en kan daarom niet worden uitgeschakeld."
+
+msgid "Two-factor authentication is required for your role. You cannot use the admin interface until you finish this."
+msgstr "Tweefactorauthenticatie is verplicht voor jouw rol. Je kunt de beheeromgeving niet gebruiken totdat je dit hebt afgerond."
+
+#, php-format
+msgid "Two-factor authentication, all recovery codes and all trusted devices will be removed for %s. They will be emailed about it, and the action is written to the log."
+msgstr "Tweefactorauthenticatie, alle herstelcodes en alle vertrouwde apparaten worden verwijderd voor %s. Diegene krijgt hierover een e-mail en de actie wordt in het log vastgelegd."
+
+msgid "Two-step verification"
+msgstr "Verificatie in twee stappen"
+
+msgid "Type: time-based · Digits: 6 · Interval: 30 seconds · Algorithm: SHA1"
+msgstr "Type: tijdgebaseerd · Cijfers: 6 · Interval: 30 seconden · Algoritme: SHA1"
+
+msgid "Unknown device"
+msgstr "Onbekend apparaat"
+
+msgid "Use a recovery code"
+msgstr "Een herstelcode gebruiken"
+
+msgid "Use a recovery code instead"
+msgstr "Gebruik in plaats daarvan een herstelcode"
+
+msgid "Use this when the person has lost their phone and their recovery codes. They will be emailed, and the reset is logged."
+msgstr "Gebruik dit wanneer diegene zowel de telefoon als de herstelcodes kwijt is. Diegene krijgt een e-mail en de reset wordt gelogd."
+
+msgid "Users"
+msgstr "Gebruikers"
+
+msgid "Users enable two-factor authentication themselves, from the \"Two-factor authentication\" tab on their own user page. These settings apply to everyone."
+msgstr "Gebruikers schakelen tweefactorauthenticatie zelf in, via het tabblad \"Tweefactorauthenticatie\" op hun eigen gebruikerspagina. Deze instellingen gelden voor iedereen."
+
+msgid "You are asked for a code from your authenticator app when you log in."
+msgstr "Bij het inloggen wordt om een code uit je authenticator-app gevraagd."
+
+msgid "Your recovery codes"
+msgstr "Je herstelcodes"
+
+#, php-format
+msgid "[%s] Two-factor authentication was reset"
+msgstr "[%s] Tweefactorauthenticatie is gereset"
+

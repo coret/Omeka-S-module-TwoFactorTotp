@@ -1,0 +1,15 @@
+<?php
+$translate = $this->plugin('translate');
+$this->htmlElement('body')->appendAttribute('class', 'two-factor-totp disable');
+?>
+<?php echo $this->pageTitle($translate('Disable two-factor authentication'), 1, $translate('Users')); ?>
+
+<div class="messages">
+    <ul class="messages"><li class="warning"><?php
+        echo $translate('This removes the second factor from your account, deletes your recovery codes, and signs out every device you had marked as trusted. Your account will be protected by its password alone.');
+    ?></li></ul>
+</div>
+
+<p><?php echo $translate('Confirm with your password to continue.'); ?></p>
+
+<?php echo $this->form($form); ?>

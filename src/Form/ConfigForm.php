@@ -1,0 +1,105 @@
+<?php declare(strict_types=1);
+
+namespace TwoFactorTotp\Form;
+
+use Laminas\Form\Form;
+use Omeka\Permissions\Acl;
+
+class ConfigForm extends Form
+{
+    protected ?Acl $acl = null;
+
+    public function setAcl(Acl $acl): self
+    {
+        $this->acl = $acl;
+        return $this;
+    }
+
+    public function init(): void
+    {
+        $this->add([
+            'name' => 'twofactortotp_issuer',
+            'type' => 'Text',
+            'options' => [
+                'label' => 'Issuer name', // @translate
+                'info' => 'The name shown next to the account in the authenticator app. Leave empty to use the installation title.', // @translate
+            ],
+            'attributes' => [
+                'id' => 'twofactortotp_issuer',
+            ],
+        ]);
+
+        $this->add([
+            'name' => 'twofactortotp_required_roles',
+            'type' => 'MultiCheckbox',
+            'options' => [
+                'label' => 'Require two-factor authentication for these roles', // @translate
+                'info' => 'Users with a selected role must set up two-factor authentication before they can use the admin interface. Existing sessions are not affected.', // @translate
+                'value_options' => $this->acl ? $this->acl->getRoleLabels() : [],
+            ],
+            'attributes' => [
+                'id' => 'twofactortotp_required_roles',
+            ],
+        ]);
+
+        $this->add([
+            'name' => 'twofactortotp_remember_device_days',
+            'type' => 'Number',
+            'options' => [
+                'label' => 'Remember a device for (days)', // @translate
+                'info' => 'How long a device stays trusted after the user ticks "remember this device". Set to 0 to remove the option entirely.', // @translate
+            ],
+            'attributes' => [
+                'id' => 'twofactortotp_remember_device_days',
+                'min' => 0,
+                'max' => 365,
+            ],
+        ]);
+
+        $this->add([
+            'name' => 'twofactortotp_window',
+            'type' => 'Number',
+            'options' => [
+                'label' => 'Accepted time steps either side', // @translate
+                'info' => 'How much clock drift between server and phone to tolerate, in 30-second steps. 1 is the usual value; raising it widens the window in which a code stays valid.', // @translate
+            ],
+            'attributes' => [
+                'id' => 'twofactortotp_window',
+                'min' => 0,
+                'max' => 10,
+            ],
+        ]);
+
+        $this->add([
+            'name' => 'twofactortotp_pending_ttl',
+            'type' => 'Number',
+            'options' => [
+                'label' => 'Time allowed to enter the code (seconds)', // @translate
+                'info' => 'How long a password-verified login may wait at the code screen before it is discarded.', // @translate
+            ],
+            'attributes' => [
+                'id' => 'twofactortotp_pending_ttl',
+                'min' => 30,
+                'max' => 3600,
+            ],
+        ]);
+
+        $this->add([
+            'name' => 'twofactortotp_max_attempts',
+            'type' => 'Number',
+            'options' => [
+                'label' => 'Wrong codes allowed per login', // @translate
+                'info' => 'After this many wrong codes the login is discarded and the user starts again from the password screen.', // @translate
+            ],
+            'attributes' => [
+                'id' => 'twofactortotp_max_attempts',
+                'min' => 1,
+                'max' => 20,
+            ],
+        ]);
+
+        $inputFilter = $this->getInputFilter();
+        $inputFilter->add(['name' => 'twofactortotp_issuer', 'required' => false]);
+        $inputFilter->add(['name' => 'twofactortotp_required_roles', 'required' => false]);
+    }
+}

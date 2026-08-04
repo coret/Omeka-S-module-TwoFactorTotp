@@ -1,0 +1,21 @@
+<?php
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+$form->prepare();
+?>
+<p>
+    <?php echo $translate('Users enable two-factor authentication themselves, from the "Two-factor authentication" tab on their own user page. These settings apply to everyone.'); ?>
+</p>
+
+<p class="totp-server-time">
+    <?php echo sprintf(
+        $translate('Server time is %s. If this is more than about half a minute away from real time, every code will be rejected — check that NTP is running.'),
+        '<strong>' . $escape($serverTime) . '</strong>'
+    ); ?>
+</p>
+
+<?php echo $this->formCollection($form, false); ?>
+
+<style>
+.totp-server-time { color: #555; }
+</style>

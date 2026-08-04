@@ -1,0 +1,31 @@
+<?php
+$translate = $this->plugin('translate');
+$this->htmlElement('body')->appendAttribute('class', 'login two-factor-totp');
+?>
+<h1><?php echo $translate('Use a recovery code'); ?></h1>
+
+<p class="two-factor-intro">
+    <?php echo $translate('Enter one of the recovery codes you saved when you set up two-factor authentication. Each code works only once.'); ?>
+</p>
+
+<?php echo $this->form($form); ?>
+
+<p class="two-factor-alternatives">
+    <?php echo $this->hyperlink($translate('Back to the code from my app'), $otpUrl); ?>
+    &nbsp;·&nbsp;
+    <?php echo $this->hyperlink($translate('Cancel'), $this->url('two-factor', ['action' => 'cancel'])); ?>
+</p>
+
+<style>
+.two-factor-totp #totp-recovery-code {
+    font-family: monospace;
+    font-size: 1.2em;
+    letter-spacing: 0.15em;
+    text-align: center;
+    max-width: 14em;
+}
+.two-factor-alternatives {
+    margin-top: 1.5em;
+    font-size: 0.9em;
+}
+</style>

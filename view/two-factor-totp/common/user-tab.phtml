@@ -1,0 +1,132 @@
+<?php
+/**
+ * The "Two-factor authentication" section on the user edit page.
+ *
+ * Rendered from Module::addUserSection() into the view.edit.form.after event.
+ * It sits *outside* the surrounding form's inputs on purpose: enrollment is a
+ * multi-step flow of its own, not something to save along with a display name.
+ *
+ * @var \Omeka\Api\Representation\UserRepresentation $user
+ * @var \Omeka\Entity\User $userEntity
+ * @var bool $isSelf
+ * @var bool $isEnabled
+ * @var bool $isForced
+ * @var int $recoveryCodesRemaining
+ * @var int $lowWaterMark
+ * @var int $deviceCount
+ * @var bool $trustedDevicesEnabled
+ * @var bool $canReset
+ */
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+?>
+<fieldset id="two-factor-totp" class="section">
+
+<?php if ($isSelf): ?>
+
+    <?php if ($isEnabled): ?>
+
+        <p class="totp-status totp-status-on">
+            <strong><?php echo $translate('Two-factor authentication is enabled.'); ?></strong>
+            <?php echo $translate('You are asked for a code from your authenticator app when you log in.'); ?>
+        </p>
+
+        <?php if ($recoveryCodesRemaining <= $lowWaterMark): ?>
+        <p class="totp-warning">
+            <?php echo sprintf(
+                $translate('Only %d recovery codes left. Generate a new set so you are not locked out if you lose your phone.'),
+                $recoveryCodesRemaining
+            ); ?>
+        </p>
+        <?php else: ?>
+        <p><?php echo sprintf($translate('%d recovery codes remaining.'), $recoveryCodesRemaining); ?></p>
+        <?php endif; ?>
+
+        <?php if ($trustedDevicesEnabled): ?>
+        <p><?php echo sprintf($translate('%d trusted devices.'), $deviceCount); ?></p>
+        <?php endif; ?>
+
+        <p class="totp-actions">
+            <?php echo $this->hyperlink(
+                $translate('Generate new recovery codes'),
+                $this->url('admin/two-factor', ['action' => 'recovery-codes']),
+                ['class' => 'button']
+            ); ?>
+            <?php if ($trustedDevicesEnabled): ?>
+            <?php echo $this->hyperlink(
+                $translate('Manage trusted devices'),
+                $this->url('admin/two-factor', ['action' => 'devices']),
+                ['class' => 'button']
+            ); ?>
+            <?php endif; ?>
+            <?php if (!$isForced): ?>
+            <?php echo $this->hyperlink(
+                $translate('Disable two-factor authentication'),
+                $this->url('admin/two-factor', ['action' => 'disable']),
+                ['class' => 'button red']
+            ); ?>
+            <?php endif; ?>
+        </p>
+
+        <?php if ($isForced): ?>
+        <p class="totp-note"><?php echo $translate('Two-factor authentication is required for your role, so it cannot be turned off.'); ?></p>
+        <?php endif; ?>
+
+    <?php else: ?>
+
+        <p class="totp-status totp-status-off">
+            <strong><?php echo $translate('Two-factor authentication is not enabled.'); ?></strong>
+            <?php echo $translate('Add a second step to your login using an authenticator app on your phone, so a stolen password is not enough on its own.'); ?>
+        </p>
+
+        <?php if ($isForced): ?>
+        <p class="totp-warning"><?php echo $translate('It is required for your role — you will be asked to set it up on your next request.'); ?></p>
+        <?php endif; ?>
+
+        <p class="totp-actions">
+            <?php echo $this->hyperlink(
+                $translate('Enable two-factor authentication'),
+                $this->url('admin/two-factor', ['action' => 'setup']),
+                ['class' => 'button']
+            ); ?>
+        </p>
+
+    <?php endif; ?>
+
+<?php else: ?>
+
+    <p class="totp-status">
+        <?php if ($isEnabled): ?>
+            <strong><?php echo $translate('Two-factor authentication is enabled for this user.'); ?></strong>
+        <?php else: ?>
+            <strong><?php echo $translate('Two-factor authentication is not enabled for this user.'); ?></strong>
+        <?php endif; ?>
+    </p>
+
+    <p class="totp-note">
+        <?php echo $translate('Only the account holder can set this up — nobody else can see or change their secret.'); ?>
+    </p>
+
+    <?php if ($canReset && $isEnabled): ?>
+    <p class="totp-actions">
+        <?php echo $this->hyperlink(
+            $translate('Reset two-factor authentication'),
+            $this->url('admin/two-factor', ['action' => 'reset'], ['query' => ['user_id' => $user->id()]]),
+            ['class' => 'button red']
+        ); ?>
+    </p>
+    <p class="totp-note">
+        <?php echo $translate('Use this when the person has lost their phone and their recovery codes. They will be emailed, and the reset is logged.'); ?>
+    </p>
+    <?php endif; ?>
+
+<?php endif; ?>
+
+<style>
+#two-factor-totp .totp-status { margin-bottom: 1em; }
+#two-factor-totp .totp-warning { color: #a33; font-weight: bold; }
+#two-factor-totp .totp-note { color: #666; font-size: .9em; }
+#two-factor-totp .totp-actions { margin: 1.2em 0; display: flex; flex-wrap: wrap; gap: .5em; }
+</style>
+
+</fieldset>

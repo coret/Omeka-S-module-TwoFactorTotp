@@ -1,0 +1,11 @@
+<?php
+$translate = $this->plugin('translate');
+$this->htmlElement('body')->appendAttribute('class', 'two-factor-totp recovery-codes-form');
+?>
+<?php echo $this->pageTitle($translate('Your recovery codes'), 1, $translate('Users')); ?>
+
+<p><?php echo sprintf($translate('%d recovery codes remaining.'), $remaining); ?></p>
+
+<p><?php echo $translate('Confirm with your password to continue.'); ?></p>
+
+<?php echo $this->form($form); ?>

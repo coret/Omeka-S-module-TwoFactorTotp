@@ -1,0 +1,30 @@
+<?php
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+$this->htmlElement('body')->appendAttribute('class', 'two-factor-totp reset');
+?>
+<?php echo $this->pageTitle($translate('Reset two-factor authentication'), 1, $translate('Users')); ?>
+
+<?php if (!$isEnabled): ?>
+
+<p><?php echo sprintf(
+    $translate('%s does not have two-factor authentication enabled. There is nothing to reset.'),
+    '<strong>' . $escape($targetUser->getEmail()) . '</strong>'
+); ?></p>
+
+<?php else: ?>
+
+<div class="messages">
+    <ul class="messages"><li class="warning"><?php
+        echo $translate('This removes the second factor from another person’s account. Only do this when you are certain who you are talking to — anyone who can pass this check can take the account over with the password alone.');
+    ?></li></ul>
+</div>
+
+<p><?php echo sprintf(
+    $translate('Two-factor authentication, all recovery codes and all trusted devices will be removed for %s. They will be emailed about it, and the action is written to the log.'),
+    '<strong>' . $escape($targetUser->getEmail()) . '</strong>'
+); ?></p>
+
+<?php echo $this->form($form); ?>
+
+<?php endif; ?>

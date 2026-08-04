@@ -1,0 +1,55 @@
+<?php
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+$this->htmlElement('body')->appendAttribute('class', 'two-factor-totp recovery-codes');
+$userUrl = $this->url('admin/id', ['controller' => 'user', 'action' => 'edit', 'id' => $user->getId()]);
+?>
+<?php echo $this->pageTitle($translate('Your recovery codes'), 1, $translate('Users')); ?>
+
+<div class="messages">
+    <ul class="messages"><li class="warning"><?php
+        echo $translate('These codes are shown once and cannot be retrieved again. Save them somewhere safe and away from the device running your authenticator app — they are the only way back in if you lose your phone.');
+    ?></li></ul>
+</div>
+
+<ul class="totp-recovery-code-list">
+    <?php foreach ($recoveryCodes as $code): ?>
+    <li><code><?php echo $escape($code); ?></code></li>
+    <?php endforeach; ?>
+</ul>
+
+<p class="totp-recovery-actions">
+    <button type="button" id="totp-copy-codes"><?php echo $translate('Copy to clipboard'); ?></button>
+    <button type="button" onclick="window.print();"><?php echo $translate('Print'); ?></button>
+</p>
+
+<p><?php echo $this->hyperlink(
+    $translate('I have saved my recovery codes'),
+    $userUrl,
+    ['class' => 'button']
+); ?></p>
+
+<script>
+document.getElementById('totp-copy-codes').addEventListener('click', function () {
+    var codes = Array.prototype.map.call(
+        document.querySelectorAll('.totp-recovery-code-list code'),
+        function (el) { return el.textContent; }
+    ).join('\n');
+    var button = this;
+    navigator.clipboard.writeText(codes).then(function () {
+        var original = button.textContent;
+        button.textContent = <?php echo json_encode($translate('Copied')); ?>;
+        setTimeout(function () { button.textContent = original; }, 2000);
+    });
+});
+</script>
+
+<style>
+.totp-recovery-code-list { list-style: none; padding: 0; columns: 2; max-width: 32em; }
+.totp-recovery-code-list li { margin: .35em 0; }
+.totp-recovery-code-list code { font-size: 1.15em; letter-spacing: .08em; user-select: all; }
+.totp-recovery-actions { margin: 1.5em 0; }
+@media print {
+    #page-actions, .totp-recovery-actions, nav, header, footer { display: none !important; }
+}
+</style>

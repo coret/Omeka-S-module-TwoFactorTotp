@@ -1,0 +1,66 @@
+<?php
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+$this->htmlElement('body')->appendAttribute('class', 'two-factor-totp setup');
+$this->headScript()->appendFile($this->assetUrl('vendor/qrcode-generator/qrcode.js', 'TwoFactorTotp'));
+$this->headScript()->appendFile($this->assetUrl('js/totp-setup.js', 'TwoFactorTotp'));
+?>
+<?php echo $this->pageTitle($translate('Set up two-factor authentication'), 1, $translate('Users')); ?>
+
+<?php if ($isForced): ?>
+<div class="messages">
+    <ul class="messages"><li class="warning"><?php
+        echo $translate('Two-factor authentication is required for your role. You cannot use the admin interface until you finish this.');
+    ?></li></ul>
+</div>
+<?php endif; ?>
+
+<div class="two-factor-setup">
+
+    <section class="setup-step">
+        <h3><?php echo $translate('1. Install an authenticator app'); ?></h3>
+        <p><?php echo $translate('Any TOTP app works — for example Google Authenticator, Aegis, FreeOTP, 1Password or Bitwarden.'); ?></p>
+    </section>
+
+    <section class="setup-step">
+        <h3><?php echo $translate('2. Scan this code'); ?></h3>
+
+        <div id="totp-qrcode"
+             data-uri="<?php echo $escape($provisioningUri); ?>"
+             role="img"
+             aria-label="<?php echo $escape($translate('QR code for setting up two-factor authentication')); ?>"></div>
+
+        <noscript>
+            <p class="error"><?php echo $translate('JavaScript is required to draw the QR code. Use the setup key below instead.'); ?></p>
+        </noscript>
+
+        <details class="totp-manual-entry">
+            <summary><?php echo $translate('Can’t scan? Enter this key by hand'); ?></summary>
+            <p>
+                <code id="totp-secret"><?php echo $escape(chunk_split((string) $secret, 4, ' ')); ?></code>
+            </p>
+            <p class="totp-manual-hint">
+                <?php echo $translate('Type: time-based · Digits: 6 · Interval: 30 seconds · Algorithm: SHA1'); ?>
+            </p>
+        </details>
+    </section>
+
+    <section class="setup-step">
+        <h3><?php echo $translate('3. Confirm'); ?></h3>
+        <p><?php echo $translate('Enter the code your app shows now. This proves the app was set up correctly before it becomes required to log in.'); ?></p>
+        <?php echo $this->form($form); ?>
+    </section>
+
+</div>
+
+<style>
+.two-factor-setup .setup-step { margin-bottom: 2em; }
+#totp-qrcode { margin: 1em 0; }
+#totp-qrcode svg { max-width: 260px; height: auto; background: #fff; padding: 8px; }
+#totp-secret { font-size: 1.15em; letter-spacing: 0.1em; user-select: all; }
+.totp-manual-hint { font-size: .9em; color: #666; }
+.two-factor-setup #totp-confirm-code {
+    font-family: monospace; font-size: 1.4em; letter-spacing: .3em;
+    text-align: center; max-width: 7em;
+}
+</style>
