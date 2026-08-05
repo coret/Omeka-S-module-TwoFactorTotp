@@ -54,6 +54,11 @@ $escape = $this->plugin('escapeHtml');
             ); ?>
             <?php if ($trustedDevicesEnabled): ?>
             <?php echo $this->hyperlink(
+                sprintf($translate('Passkeys (%d)'), $passkeyCount),
+                $this->url('admin/two-factor', ['action' => 'passkeys']),
+                ['class' => 'button']
+            ); ?>
+            <?php echo $this->hyperlink(
                 $translate('Manage trusted devices'),
                 $this->url('admin/two-factor', ['action' => 'devices']),
                 ['class' => 'button']

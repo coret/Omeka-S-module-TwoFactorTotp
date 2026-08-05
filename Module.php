@@ -355,7 +355,10 @@ class Module extends AbstractModule
         $acl->allow(
             $allRoles,
             [Controller\Admin\TotpController::class],
-            ['setup', 'disable', 'recovery-codes', 'devices', 'revoke-device']
+            [
+                'setup', 'disable', 'recovery-codes', 'devices', 'revoke-device',
+                'passkeys', 'passkey-challenge', 'passkey-verify', 'passkey-remove',
+            ]
         );
 
         // Resetting somebody else's second factor. Restricted to the roles
@@ -490,6 +493,7 @@ class Module extends AbstractModule
             'recoveryCodesRemaining' => $totpManager->countRecoveryCodes($userEntity),
             'lowWaterMark' => TotpManager::RECOVERY_LOW_WATER_MARK,
             'deviceCount' => count($trustedDevices->listForUser($userEntity)),
+            'passkeyCount' => $services->get(Service\PasskeyManager::class)->countForUser($userEntity),
             'trustedDevicesEnabled' => $trustedDevices->isEnabled(),
             'canReset' => $view->userIsAllowed($userEntity, 'change-role-admin'),
         ]);

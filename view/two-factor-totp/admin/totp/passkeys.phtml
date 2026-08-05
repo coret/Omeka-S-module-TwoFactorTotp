@@ -1,0 +1,88 @@
+<?php
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+$formElement = $this->plugin('formElement');
+$this->htmlElement('body')->appendAttribute('class', 'two-factor-totp passkeys');
+$this->headScript()->appendFile($this->assetUrl('js/passkey-register.js', 'TwoFactorTotp'));
+// Omeka's Csrf initializer names the element after the form, so a form from the
+// form manager gets "confirmform_csrf" rather than a bare "csrf".
+$csrfName = $confirmForm->getName() ? $confirmForm->getName() . '_csrf' : 'csrf';
+$csrf = $confirmForm->get($csrfName);
+?>
+<?php echo $this->pageTitle($translate('Passkeys'), 1, $translate('Users')); ?>
+
+<p><?php echo $translate('A passkey lets you finish logging in with a hardware key, a fingerprint or your device unlock, instead of typing a code.'); ?></p>
+
+<?php if (!$isAvailable): ?>
+
+<div class="messages">
+    <ul class="messages"><li class="error"><?php
+        echo $translate('Passkeys are not available on this installation.');
+    ?></li></ul>
+</div>
+
+<?php else: ?>
+
+<?php if (!count($credentials)): ?>
+<p><em><?php echo $translate('No passkeys registered.'); ?></em></p>
+<?php else: ?>
+
+<table class="tablesaw tablesaw-stack" data-tablesaw-mode="stack">
+    <thead>
+        <tr>
+            <th><?php echo $translate('Passkey'); ?></th>
+            <th><?php echo $translate('Added'); ?></th>
+            <th><?php echo $translate('Last used'); ?></th>
+            <th><?php echo $translate('Revoke'); ?></th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($credentials as $credential): ?>
+        <tr>
+            <td><?php echo $escape($credential->getLabel() ?: $translate('Unnamed passkey')); ?></td>
+            <td><?php echo $credential->getCreated() ? $escape($credential->getCreated()->format('Y-m-d')) : ''; ?></td>
+            <td><?php echo $credential->getLastUsedAt()
+                ? $escape($credential->getLastUsedAt()->format('Y-m-d H:i'))
+                : '<em>' . $escape($translate('Never')) . '</em>'; ?></td>
+            <td>
+                <form method="post" action="<?php echo $escape($removeUrl); ?>">
+                    <input type="hidden" name="credential_id" value="<?php echo $escape((string) $credential->getId()); ?>">
+                    <?php echo $formElement($csrf); ?>
+                    <button type="submit"><?php echo $translate('Revoke'); ?></button>
+                </form>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+    </tbody>
+</table>
+
+<?php endif; ?>
+
+<div id="totp-passkey-register"
+     data-challenge-url="<?php echo $escape($challengeUrl); ?>"
+     data-verify-url="<?php echo $escape($verifyUrl); ?>"
+     data-waiting="<?php echo $escape($translate('Touch your key, or use your device unlock.')); ?>"
+     data-failed="<?php echo $escape($translate('That did not work. Try again, or use another way in.')); ?>"
+     data-cancelled="<?php echo $escape($translate('Cancelled.')); ?>"
+     data-duplicate="<?php echo $escape($translate('That passkey is already registered.')); ?>"
+     data-unsupported="<?php echo $escape($translate('This browser does not support passkeys.')); ?>">
+
+    <h3><?php echo $translate('Add a passkey'); ?></h3>
+    <p>
+        <label>
+            <?php echo $translate('Name (optional)'); ?>
+            <input type="text" id="totp-passkey-label" maxlength="255"
+                   placeholder="<?php echo $escape($translate('Work laptop')); ?>">
+        </label>
+    </p>
+    <p><button type="button" id="totp-passkey-add"><?php echo $translate('Add a passkey'); ?></button></p>
+    <p id="totp-passkey-register-status" role="status" aria-live="polite"></p>
+</div>
+
+<?php endif; ?>
+
+<style>
+#totp-passkey-register-status { min-height: 1.5em; }
+#totp-passkey-register-status.error { color: #a00; }
+#totp-passkey-register { margin-top: 1.5em; }
+</style>

@@ -30,6 +30,19 @@ class ConfigForm extends Form
         ]);
 
         $this->add([
+            'type' => 'text',
+            'name' => 'twofactortotp_rp_id',
+            'options' => [
+                'label' => 'Passkey domain', // @translate
+                'info' => 'The domain passkeys are bound to. Leave empty to use the host the site is served from, which is right unless the site answers on more than one name. Changing it invalidates every passkey already registered.', // @translate
+            ],
+            'attributes' => [
+                'id' => 'twofactortotp_rp_id',
+                'placeholder' => 'example.org',
+            ],
+        ]);
+
+        $this->add([
             'name' => 'twofactortotp_required_roles',
             'type' => 'MultiCheckbox',
             'options' => [
@@ -101,5 +114,6 @@ class ConfigForm extends Form
         $inputFilter = $this->getInputFilter();
         $inputFilter->add(['name' => 'twofactortotp_issuer', 'required' => false]);
         $inputFilter->add(['name' => 'twofactortotp_required_roles', 'required' => false]);
+        $inputFilter->add(['name' => 'twofactortotp_rp_id', 'required' => false]);
     }
 }

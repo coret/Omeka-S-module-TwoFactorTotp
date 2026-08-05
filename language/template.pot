@@ -35,42 +35,50 @@ msgid "The name shown next to the account in the authenticator app. Leave empty 
 msgstr ""
 
 #: Form/ConfigForm.php:36
-msgid "Require two-factor authentication for these roles"
+msgid "Passkey domain"
 msgstr ""
 
 #: Form/ConfigForm.php:37
-msgid "Users with a selected role must set up two-factor authentication before they can use the admin interface. Existing sessions are not affected."
+msgid "The domain passkeys are bound to. Leave empty to use the host the site is served from, which is right unless the site answers on more than one name. Changing it invalidates every passkey already registered."
 msgstr ""
 
 #: Form/ConfigForm.php:49
-msgid "Remember a device for (days)"
+msgid "Require two-factor authentication for these roles"
 msgstr ""
 
 #: Form/ConfigForm.php:50
-msgid "How long a device stays trusted after the user ticks \"remember this device\". Set to 0 to remove the option entirely."
+msgid "Users with a selected role must set up two-factor authentication before they can use the admin interface. Existing sessions are not affected."
+msgstr ""
+
+#: Form/ConfigForm.php:62
+msgid "Remember a device for (days)"
 msgstr ""
 
 #: Form/ConfigForm.php:63
+msgid "How long a device stays trusted after the user ticks \"remember this device\". Set to 0 to remove the option entirely."
+msgstr ""
+
+#: Form/ConfigForm.php:76
 msgid "Accepted time steps either side"
 msgstr ""
 
-#: Form/ConfigForm.php:64
+#: Form/ConfigForm.php:77
 msgid "How much clock drift between server and phone to tolerate, in 30-second steps. 1 is the usual value; raising it widens the window in which a code stays valid."
 msgstr ""
 
-#: Form/ConfigForm.php:77
+#: Form/ConfigForm.php:90
 msgid "Time allowed to enter the code (seconds)"
 msgstr ""
 
-#: Form/ConfigForm.php:78
+#: Form/ConfigForm.php:91
 msgid "How long a password-verified login may wait at the code screen before it is discarded."
 msgstr ""
 
-#: Form/ConfigForm.php:91
+#: Form/ConfigForm.php:104
 msgid "Wrong codes allowed per login"
 msgstr ""
 
-#: Form/ConfigForm.php:92
+#: Form/ConfigForm.php:105
 msgid "After this many wrong codes the login is discarded and the user starts again from the password screen."
 msgstr ""
 
@@ -114,21 +122,21 @@ msgstr ""
 msgid "Your login timed out. Please log in again."
 msgstr ""
 
-#: Controller/OtpController.php:123
+#: Controller/OtpController.php:133
 #, php-format
 msgid "You have %d recovery codes left. Generate a new set from your user page."
 msgstr ""
 
-#: Controller/OtpController.php:128
+#: Controller/OtpController.php:138
 #, php-format
 msgid "Recovery code accepted. You have %d left."
 msgstr ""
 
-#: Controller/OtpController.php:177
+#: Controller/OtpController.php:187
 msgid "Too many incorrect codes. Please log in again."
 msgstr ""
 
-#: Controller/OtpController.php:183
+#: Controller/OtpController.php:193
 #, php-format
 msgid "Invalid code. %d attempts remaining."
 msgstr ""
@@ -137,62 +145,67 @@ msgstr ""
 msgid "Email or password is invalid"
 msgstr ""
 
-#: Controller/Admin/TotpController.php:54
-msgid "Two-factor authentication is already enabled for your account."
-msgstr ""
-
-#: Controller/Admin/TotpController.php:75
-msgid "Two-factor authentication is now enabled."
-msgstr ""
-
-#: Controller/Admin/TotpController.php:88
-msgid "That code was not correct. Check your app and try again."
-msgstr ""
-
-#: Controller/Admin/TotpController.php:117
-msgid "Two-factor authentication is required for your role and cannot be turned off."
-msgstr ""
-
-#: Controller/Admin/TotpController.php:123
-msgid "Disable two-factor authentication"
-msgstr ""
-
-#: Controller/Admin/TotpController.php:132
-#: Controller/Admin/TotpController.php:175
-msgid "The password entered was invalid."
-msgstr ""
-
-#: Controller/Admin/TotpController.php:142
-msgid "Two-factor authentication is now disabled."
-msgstr ""
-
-#: Controller/Admin/TotpController.php:166
-msgid "Generate new recovery codes"
-msgstr ""
-
-#: Controller/Admin/TotpController.php:181
-msgid "New recovery codes generated. Your previous codes no longer work."
-msgstr ""
-
-#: Controller/Admin/TotpController.php:234
-#: Controller/Admin/TotpController.php:310
+#: Controller/Admin/TotpController.php:183
+#: Controller/Admin/TotpController.php:406
+#: Controller/Admin/TotpController.php:482
 msgid "Invalid or missing CSRF token"
 msgstr ""
 
-#: Controller/Admin/TotpController.php:244
+#: Controller/Admin/TotpController.php:198
+msgid "Passkey removed."
+msgstr ""
+
+#: Controller/Admin/TotpController.php:226
+msgid "Two-factor authentication is already enabled for your account."
+msgstr ""
+
+#: Controller/Admin/TotpController.php:247
+msgid "Two-factor authentication is now enabled."
+msgstr ""
+
+#: Controller/Admin/TotpController.php:260
+msgid "That code was not correct. Check your app and try again."
+msgstr ""
+
+#: Controller/Admin/TotpController.php:289
+msgid "Two-factor authentication is required for your role and cannot be turned off."
+msgstr ""
+
+#: Controller/Admin/TotpController.php:295
+msgid "Disable two-factor authentication"
+msgstr ""
+
+#: Controller/Admin/TotpController.php:304
+#: Controller/Admin/TotpController.php:347
+msgid "The password entered was invalid."
+msgstr ""
+
+#: Controller/Admin/TotpController.php:314
+msgid "Two-factor authentication is now disabled."
+msgstr ""
+
+#: Controller/Admin/TotpController.php:338
+msgid "Generate new recovery codes"
+msgstr ""
+
+#: Controller/Admin/TotpController.php:353
+msgid "New recovery codes generated. Your previous codes no longer work."
+msgstr ""
+
+#: Controller/Admin/TotpController.php:416
 msgid "Device revoked."
 msgstr ""
 
-#: Controller/Admin/TotpController.php:249
+#: Controller/Admin/TotpController.php:421
 #, php-format
 msgid "Revoked %d devices."
 msgstr ""
 
-#: Controller/Admin/TotpController.php:285
+#: Controller/Admin/TotpController.php:457
 msgid "Reset two-factor authentication"
 msgstr ""
 
-#: Controller/Admin/TotpController.php:303
+#: Controller/Admin/TotpController.php:475
 #, php-format
 msgid "Two-factor authentication was reset for %s."
 msgstr ""
@@ -205,11 +218,11 @@ msgstr ""
 msgid "The TwoFactorAuth module is active. Both modules replace the login controller, so they cannot run together. Disable TwoFactorAuth first."
 msgstr ""
 
-#: Module.php:426
+#: Module.php:429
 msgid "Two-factor authentication is required for your role. Set it up to continue."
 msgstr ""
 
-#: Module.php:461
+#: Module.php:464
 msgid "Two-factor authentication"
 msgstr ""
 
@@ -245,15 +258,25 @@ msgstr ""
 msgid "3. Confirm"
 msgstr ""
 
-#: view/two-factor-totp/common/user-tab.phtml:79
+#: view/two-factor-totp/admin/totp/passkeys.phtml:14
+msgid "A passkey lets you finish logging in with a hardware key, a fingerprint or your device unlock, instead of typing a code."
+msgstr ""
+
+#: view/two-factor-totp/admin/totp/passkeys.phtml:70
+#: view/two-factor-totp/admin/totp/passkeys.phtml:78
+msgid "Add a passkey"
+msgstr ""
+
+#: view/two-factor-totp/common/user-tab.phtml:84
 msgid "Add a second step to your login using an authenticator app on your phone, so a stolen password is not enough on its own."
 msgstr ""
 
 #: view/two-factor-totp/admin/totp/devices.phtml:25
+#: view/two-factor-totp/admin/totp/passkeys.phtml:34
 msgid "Added"
 msgstr ""
 
-#: src/Controller/Admin/TotpController.php:362
+#: src/Controller/Admin/TotpController.php:534
 msgid "An administrator has reset two-factor authentication on your account. You can log in with your password alone until you set it up again. If you did not expect this, contact your administrator immediately."
 msgstr ""
 
@@ -266,12 +289,13 @@ msgstr ""
 msgid "Back to the code from my app"
 msgstr ""
 
-#: view/two-factor-totp/otp/otp.phtml:17
+#: view/two-factor-totp/otp/otp.phtml:21
 #: view/two-factor-totp/otp/recovery.phtml:16
 #: view/two-factor-totp/passkey/index.phtml:58
 msgid "Cancel"
 msgstr ""
 
+#: view/two-factor-totp/admin/totp/passkeys.phtml:66
 #: view/two-factor-totp/passkey/index.phtml:29
 msgid "Cancelled."
 msgstr ""
@@ -313,7 +337,7 @@ msgstr ""
 msgid "I have saved my recovery codes"
 msgstr ""
 
-#: view/two-factor-totp/common/user-tab.phtml:83
+#: view/two-factor-totp/common/user-tab.phtml:88
 msgid "It is required for your role — you will be asked to set it up on your next request."
 msgstr ""
 
@@ -322,11 +346,24 @@ msgid "JavaScript is required to draw the QR code. Use the setup key below inste
 msgstr ""
 
 #: view/two-factor-totp/admin/totp/devices.phtml:26
+#: view/two-factor-totp/admin/totp/passkeys.phtml:35
 msgid "Last used"
 msgstr ""
 
-#: view/two-factor-totp/common/user-tab.phtml:57
+#: view/two-factor-totp/common/user-tab.phtml:62
 msgid "Manage trusted devices"
+msgstr ""
+
+#: view/two-factor-totp/admin/totp/passkeys.phtml:73
+msgid "Name (optional)"
+msgstr ""
+
+#: view/two-factor-totp/admin/totp/passkeys.phtml:46
+msgid "Never"
+msgstr ""
+
+#: view/two-factor-totp/admin/totp/passkeys.phtml:27
+msgid "No passkeys registered."
 msgstr ""
 
 #: view/two-factor-totp/admin/totp/devices.phtml:18
@@ -338,10 +375,24 @@ msgstr ""
 msgid "Only %d recovery codes left. Generate a new set so you are not locked out if you lose your phone."
 msgstr ""
 
-#: view/two-factor-totp/common/user-tab.phtml:107
+#: view/two-factor-totp/common/user-tab.phtml:112
 msgid "Only the account holder can set this up — nobody else can see or change their secret."
 msgstr ""
 
+#: view/two-factor-totp/admin/totp/passkeys.phtml:33
+msgid "Passkey"
+msgstr ""
+
+#: view/two-factor-totp/admin/totp/passkeys.phtml:12
+msgid "Passkeys"
+msgstr ""
+
+#: view/two-factor-totp/common/user-tab.phtml:57
+#, php-format
+msgid "Passkeys (%d)"
+msgstr ""
+
+#: view/two-factor-totp/admin/totp/passkeys.phtml:20
 #: view/two-factor-totp/passkey/index.phtml:13
 msgid "Passkeys are not available on this installation."
 msgstr ""
@@ -356,6 +407,8 @@ msgstr ""
 
 #: view/two-factor-totp/admin/totp/devices.phtml:28
 #: view/two-factor-totp/admin/totp/devices.phtml:48
+#: view/two-factor-totp/admin/totp/passkeys.phtml:36
+#: view/two-factor-totp/admin/totp/passkeys.phtml:51
 msgid "Revoke"
 msgstr ""
 
@@ -372,8 +425,13 @@ msgstr ""
 msgid "Set up two-factor authentication"
 msgstr ""
 
+#: view/two-factor-totp/admin/totp/passkeys.phtml:65
 #: view/two-factor-totp/passkey/index.phtml:28
 msgid "That did not work. Try again, or use another way in."
+msgstr ""
+
+#: view/two-factor-totp/admin/totp/passkeys.phtml:67
+msgid "That passkey is already registered."
 msgstr ""
 
 #: view/two-factor-totp/admin/totp/devices.phtml:15
@@ -384,6 +442,7 @@ msgstr ""
 msgid "These codes are shown once and cannot be retrieved again. Save them somewhere safe and away from the device running your authenticator app — they are the only way back in if you lose your phone."
 msgstr ""
 
+#: view/two-factor-totp/admin/totp/passkeys.phtml:68
 #: view/two-factor-totp/passkey/index.phtml:30
 msgid "This browser does not support passkeys."
 msgstr ""
@@ -396,6 +455,7 @@ msgstr ""
 msgid "This removes the second factor from your account, deletes your recovery codes, and signs out every device you had marked as trusted. Your account will be protected by its password alone."
 msgstr ""
 
+#: view/two-factor-totp/admin/totp/passkeys.phtml:64
 #: view/two-factor-totp/passkey/index.phtml:27
 msgid "Touch your key, or use your device unlock."
 msgstr ""
@@ -408,7 +468,7 @@ msgstr ""
 msgid "Trusted until"
 msgstr ""
 
-#: view/two-factor-totp/common/user-tab.phtml:100
+#: view/two-factor-totp/common/user-tab.phtml:105
 msgid "Two-factor authentication is enabled for this user."
 msgstr ""
 
@@ -416,15 +476,15 @@ msgstr ""
 msgid "Two-factor authentication is enabled."
 msgstr ""
 
-#: view/two-factor-totp/common/user-tab.phtml:102
+#: view/two-factor-totp/common/user-tab.phtml:107
 msgid "Two-factor authentication is not enabled for this user."
 msgstr ""
 
-#: view/two-factor-totp/common/user-tab.phtml:78
+#: view/two-factor-totp/common/user-tab.phtml:83
 msgid "Two-factor authentication is not enabled."
 msgstr ""
 
-#: view/two-factor-totp/common/user-tab.phtml:72
+#: view/two-factor-totp/common/user-tab.phtml:77
 msgid "Two-factor authentication is required for your role, so it cannot be turned off."
 msgstr ""
 
@@ -450,16 +510,20 @@ msgstr ""
 msgid "Unknown device"
 msgstr ""
 
+#: view/two-factor-totp/admin/totp/passkeys.phtml:42
+msgid "Unnamed passkey"
+msgstr ""
+
 #: view/two-factor-totp/otp/recovery.phtml:5
 msgid "Use a recovery code"
 msgstr ""
 
-#: view/two-factor-totp/otp/otp.phtml:15
+#: view/two-factor-totp/otp/otp.phtml:19
 #: view/two-factor-totp/passkey/index.phtml:56
 msgid "Use a recovery code instead"
 msgstr ""
 
-#: view/two-factor-totp/common/user-tab.phtml:119
+#: view/two-factor-totp/common/user-tab.phtml:124
 msgid "Use this when the person has lost their phone and their recovery codes. They will be emailed, and the reset is logged."
 msgstr ""
 
@@ -469,6 +533,7 @@ msgstr ""
 
 #: view/two-factor-totp/admin/totp/devices.phtml:13
 #: view/two-factor-totp/admin/totp/disable.phtml:5
+#: view/two-factor-totp/admin/totp/passkeys.phtml:12
 #: view/two-factor-totp/admin/totp/recovery-codes-form.phtml:5
 #: view/two-factor-totp/admin/totp/recovery-codes.phtml:7
 #: view/two-factor-totp/admin/totp/reset.phtml:6
@@ -480,6 +545,10 @@ msgstr ""
 msgid "Users enable two-factor authentication themselves, from the \"Two-factor authentication\" tab on their own user page. These settings apply to everyone."
 msgstr ""
 
+#: view/two-factor-totp/admin/totp/passkeys.phtml:75
+msgid "Work laptop"
+msgstr ""
+
 #: view/two-factor-totp/common/user-tab.phtml:31
 msgid "You are asked for a code from your authenticator app when you log in."
 msgstr ""
@@ -489,7 +558,7 @@ msgstr ""
 msgid "Your recovery codes"
 msgstr ""
 
-#: src/Controller/Admin/TotpController.php:358
+#: src/Controller/Admin/TotpController.php:530
 #, php-format
 msgid "[%s] Two-factor authentication was reset"
 msgstr ""

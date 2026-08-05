@@ -12,6 +12,10 @@ $this->htmlElement('body')->appendAttribute('class', 'login two-factor-totp');
 <?php echo $this->form($form); ?>
 
 <p class="two-factor-alternatives">
+    <?php if ($passkeyUrl): ?>
+    <?php echo $this->hyperlink($translate('Use a passkey'), $passkeyUrl); ?>
+    &nbsp;·&nbsp;
+    <?php endif; ?>
     <?php echo $this->hyperlink($translate('Use a recovery code instead'), $recoveryUrl); ?>
     &nbsp;·&nbsp;
     <?php echo $this->hyperlink($translate('Cancel'), $this->url('two-factor', ['action' => 'cancel'])); ?>

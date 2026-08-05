@@ -9,8 +9,11 @@ use Omeka\Entity\User;
 use Omeka\Form\ConfirmForm;
 use Omeka\Mvc\Exception\PermissionDeniedException;
 use TwoFactorTotp\Entity\TrustedDevice;
+use TwoFactorTotp\Entity\WebAuthnCredential;
+use TwoFactorTotp\Stdlib\ChallengeStore;
 use TwoFactorTotp\Form\ConfirmOtpForm;
 use TwoFactorTotp\Form\PasswordConfirmForm;
+use TwoFactorTotp\Service\PasskeyManager;
 use TwoFactorTotp\Service\SecondFactorRegistry;
 use TwoFactorTotp\Service\TotpManager;
 use TwoFactorTotp\Service\TrustedDeviceManager;
@@ -30,16 +33,185 @@ class TotpController extends AbstractActionController
 
     protected SecondFactorRegistry $registry;
 
+    protected PasskeyManager $passkeys;
+
+    protected ChallengeStore $challenges;
+
     public function __construct(
         EntityManager $entityManager,
         TotpManager $totpManager,
         TrustedDeviceManager $trustedDevices,
-        SecondFactorRegistry $registry
+        SecondFactorRegistry $registry,
+        PasskeyManager $passkeys,
+        ChallengeStore $challenges
     ) {
         $this->entityManager = $entityManager;
         $this->totpManager = $totpManager;
         $this->trustedDevices = $trustedDevices;
         $this->registry = $registry;
+        $this->passkeys = $passkeys;
+        $this->challenges = $challenges;
+    }
+
+    // ---------------------------------------------------------------- passkeys
+
+    /**
+     * List this account's passkeys, and register another.
+     */
+    public function passkeysAction()
+    {
+        $user = $this->requireSelf();
+
+        $view = new ViewModel;
+        $view->setVariable('user', $user);
+        $view->setVariable('credentials', $this->passkeys->listForUser($user));
+        $view->setVariable('isAvailable', $this->passkeys->isAvailable());
+        $view->setVariable('confirmForm', $this->getForm(ConfirmForm::class));
+        $view->setVariable('challengeUrl', $this->url()->fromRoute('admin/two-factor', ['action' => 'passkey-challenge']));
+        $view->setVariable('verifyUrl', $this->url()->fromRoute('admin/two-factor', ['action' => 'passkey-verify']));
+        $view->setVariable('removeUrl', $this->url()->fromRoute('admin/two-factor', ['action' => 'passkey-remove']));
+        return $view;
+    }
+
+    /**
+     * Registration options, plus the challenge stashed for the verify step.
+     */
+    public function passkeyChallengeAction()
+    {
+        $user = $this->requireSelf();
+
+        if (!$this->passkeys->isAvailable()) {
+            return $this->json(['error' => 'unavailable'], 503);
+        }
+
+        [$args, $challenge] = $this->passkeys->registrationArgs($user);
+        $this->challenges->put(ChallengeStore::PURPOSE_REGISTER, $challenge);
+
+        return $this->json($args);
+    }
+
+    /**
+     * Store what the authenticator produced.
+     */
+    public function passkeyVerifyAction()
+    {
+        $user = $this->requireSelf();
+
+        if (!$this->passkeys->isAvailable()) {
+            return $this->json(['error' => 'unavailable'], 503);
+        }
+
+        $challenge = $this->challenges->take(ChallengeStore::PURPOSE_REGISTER);
+        if (null === $challenge) {
+            return $this->json(['error' => 'no_challenge'], 409);
+        }
+
+        $posted = json_decode((string) $this->getRequest()->getContent(), true);
+        foreach (['clientDataJSON', 'attestationObject'] as $field) {
+            if (empty($posted[$field]) || !is_string($posted[$field])) {
+                return $this->json(['error' => 'malformed'], 400);
+            }
+        }
+
+        try {
+            $data = $this->passkeys->webAuthn()->processCreate(
+                base64_decode($posted['clientDataJSON'], true) ?: '',
+                base64_decode($posted['attestationObject'], true) ?: '',
+                $challenge,
+                false,
+                true,
+                false
+            );
+        } catch (\Throwable $e) {
+            $this->logger()->warn(sprintf(
+                'TwoFactorTotp: passkey registration rejected for user "%s" (id %s): %s',
+                $user->getEmail(),
+                $user->getId(),
+                $e->getMessage()
+            ));
+            return $this->json(['error' => 'rejected'], 400);
+        }
+
+        $credentialId = rtrim(strtr(base64_encode($data->credentialId), '+/', '-_'), '=');
+
+        if ($this->passkeys->findByCredentialId($credentialId)) {
+            return $this->json(['error' => 'already_registered'], 409);
+        }
+
+        $credential = new WebAuthnCredential();
+        $credential
+            ->setUser($user)
+            ->setCredentialId($credentialId)
+            ->setPublicKey((string) $data->credentialPublicKey)
+            ->setSignCount((int) ($data->signatureCounter ?? 0))
+            ->setLabel(isset($posted['label']) ? trim((string) $posted['label']) : null)
+            ->setTransports(isset($posted['transports']) && is_array($posted['transports'])
+                ? implode(',', array_map('strval', $posted['transports']))
+                : null)
+            ->setAaguid(isset($data->AAGUID) ? bin2hex((string) $data->AAGUID) : null)
+            ->setCreated(new \DateTime('now'));
+
+        $this->entityManager->persist($credential);
+        $this->entityManager->flush();
+
+        $this->logger()->info(sprintf(
+            'TwoFactorTotp: user "%s" (id %s) registered a passkey.',
+            $user->getEmail(),
+            $user->getId()
+        ));
+
+        return $this->json(['ok' => true, 'redirect' => $this->url()->fromRoute(
+            'admin/two-factor',
+            ['action' => 'passkeys']
+        )]);
+    }
+
+    /**
+     * Remove one. Ownership is checked: the id comes from the request.
+     */
+    public function passkeyRemoveAction()
+    {
+        $user = $this->requireSelf();
+
+        if (!$this->getRequest()->isPost()) {
+            return $this->redirect()->toRoute('admin/two-factor', ['action' => 'passkeys']);
+        }
+
+        $form = $this->getForm(ConfirmForm::class);
+        $form->setData($this->params()->fromPost());
+        if (!$form->isValid()) {
+            $this->messenger()->addError('Invalid or missing CSRF token'); // @translate
+            return $this->redirect()->toRoute('admin/two-factor', ['action' => 'passkeys']);
+        }
+
+        $credential = $this->entityManager->find(
+            WebAuthnCredential::class,
+            (int) $this->params()->fromPost('credential_id')
+        );
+        if ($credential && $credential->getUser() === $user) {
+            $this->passkeys->remove($credential);
+            $this->logger()->warn(sprintf(
+                'TwoFactorTotp: user "%s" (id %s) removed a passkey.',
+                $user->getEmail(),
+                $user->getId()
+            ));
+            $this->messenger()->addSuccess('Passkey removed.'); // @translate
+        }
+
+        return $this->redirect()->toRoute('admin/two-factor', ['action' => 'passkeys']);
+    }
+
+    /**
+     * Omeka registers only Omeka\ViewApiJsonStrategy, so a JsonModel would not
+     * render here.
+     */
+    protected function json($data, int $status = 200)
+    {
+        $response = $this->getResponse();
+        $response->setStatusCode($status);
+        $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
+        $response->setContent(json_encode($data));
+        return $response;
     }
 
     /**

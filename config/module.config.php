@@ -143,6 +143,11 @@ return [
     'twofactortotp' => [
         'settings' => [
             'twofactortotp_issuer' => '',
+            // Empty means "derive from the host serving the request", which is
+            // right for a single-domain install. Set it explicitly when the
+            // site answers on more than one name, because a credential is bound
+            // to this value and will not work under any other.
+            'twofactortotp_rp_id' => '',
             'twofactortotp_required_roles' => [],
             'twofactortotp_remember_device_days' => 14,
             'twofactortotp_window' => 1,

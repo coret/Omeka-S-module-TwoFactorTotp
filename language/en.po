@@ -33,6 +33,12 @@ msgstr "Issuer name"
 msgid "The name shown next to the account in the authenticator app. Leave empty to use the installation title."
 msgstr "The name shown next to the account in the authenticator app. Leave empty to use the installation title."
 
+msgid "Passkey domain"
+msgstr "Passkey domain"
+
+msgid "The domain passkeys are bound to. Leave empty to use the host the site is served from, which is right unless the site answers on more than one name. Changing it invalidates every passkey already registered."
+msgstr "The domain passkeys are bound to. Leave empty to use the host the site is served from, which is right unless the site answers on more than one name. Changing it invalidates every passkey already registered."
+
 msgid "Require two-factor authentication for these roles"
 msgstr "Require two-factor authentication for these roles"
 
@@ -111,6 +117,12 @@ msgstr "Invalid code. %d attempts remaining."
 msgid "Email or password is invalid"
 msgstr "Email or password is invalid"
 
+msgid "Invalid or missing CSRF token"
+msgstr "Invalid or missing CSRF token"
+
+msgid "Passkey removed."
+msgstr "Passkey removed."
+
 msgid "Two-factor authentication is already enabled for your account."
 msgstr "Two-factor authentication is already enabled for your account."
 
@@ -137,9 +149,6 @@ msgstr "Generate new recovery codes"
 
 msgid "New recovery codes generated. Your previous codes no longer work."
 msgstr "New recovery codes generated. Your previous codes no longer work."
-
-msgid "Invalid or missing CSRF token"
-msgstr "Invalid or missing CSRF token"
 
 msgid "Device revoked."
 msgstr "Device revoked."
@@ -190,6 +199,12 @@ msgstr "2. Scan this code"
 
 msgid "3. Confirm"
 msgstr "3. Confirm"
+
+msgid "A passkey lets you finish logging in with a hardware key, a fingerprint or your device unlock, instead of typing a code."
+msgstr "A passkey lets you finish logging in with a hardware key, a fingerprint or your device unlock, instead of typing a code."
+
+msgid "Add a passkey"
+msgstr "Add a passkey"
 
 msgid "Add a second step to your login using an authenticator app on your phone, so a stolen password is not enough on its own."
 msgstr "Add a second step to your login using an authenticator app on your phone, so a stolen password is not enough on its own."
@@ -251,6 +266,15 @@ msgstr "Last used"
 msgid "Manage trusted devices"
 msgstr "Manage trusted devices"
 
+msgid "Name (optional)"
+msgstr "Name (optional)"
+
+msgid "Never"
+msgstr "Never"
+
+msgid "No passkeys registered."
+msgstr "No passkeys registered."
+
 msgid "No trusted devices."
 msgstr "No trusted devices."
 
@@ -260,6 +284,16 @@ msgstr "Only %d recovery codes left. Generate a new set so you are not locked ou
 
 msgid "Only the account holder can set this up — nobody else can see or change their secret."
 msgstr "Only the account holder can set this up — nobody else can see or change their secret."
+
+msgid "Passkey"
+msgstr "Passkey"
+
+msgid "Passkeys"
+msgstr "Passkeys"
+
+#, php-format
+msgid "Passkeys (%d)"
+msgstr "Passkeys (%d)"
 
 msgid "Passkeys are not available on this installation."
 msgstr "Passkeys are not available on this installation."
@@ -285,6 +319,9 @@ msgstr "Set up two-factor authentication"
 
 msgid "That did not work. Try again, or use another way in."
 msgstr "That did not work. Try again, or use another way in."
+
+msgid "That passkey is already registered."
+msgstr "That passkey is already registered."
 
 msgid "These browsers skip the code screen until their trust expires. Revoke any you no longer use or recognise."
 msgstr "These browsers skip the code screen until their trust expires. Revoke any you no longer use or recognise."
@@ -341,6 +378,9 @@ msgstr "Type: time-based · Digits: 6 · Interval: 30 seconds · Algorithm: SHA1
 msgid "Unknown device"
 msgstr "Unknown device"
 
+msgid "Unnamed passkey"
+msgstr "Unnamed passkey"
+
 msgid "Use a recovery code"
 msgstr "Use a recovery code"
 
@@ -358,6 +398,9 @@ msgstr "Users"
 
 msgid "Users enable two-factor authentication themselves, from the \"Two-factor authentication\" tab on their own user page. These settings apply to everyone."
 msgstr "Users enable two-factor authentication themselves, from the \"Two-factor authentication\" tab on their own user page. These settings apply to everyone."
+
+msgid "Work laptop"
+msgstr "Work laptop"
 
 msgid "You are asked for a code from your authenticator app when you log in."
 msgstr "You are asked for a code from your authenticator app when you log in."

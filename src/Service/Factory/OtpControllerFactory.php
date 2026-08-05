@@ -5,6 +5,7 @@ namespace TwoFactorTotp\Service\Factory;
 use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use TwoFactorTotp\Controller\OtpController;
+use TwoFactorTotp\Service\PasskeyManager;
 use TwoFactorTotp\Service\TotpManager;
 use TwoFactorTotp\Service\TrustedDeviceManager;
 use TwoFactorTotp\Stdlib\PendingLogin;
@@ -18,7 +19,8 @@ class OtpControllerFactory implements FactoryInterface
             $services->get('Omeka\AuthenticationService'),
             $services->get(TotpManager::class),
             $services->get(TrustedDeviceManager::class),
-            $services->get(PendingLogin::class)
+            $services->get(PendingLogin::class),
+            $services->get(PasskeyManager::class)
         );
     }
 }

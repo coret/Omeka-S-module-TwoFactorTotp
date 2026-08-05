@@ -48,6 +48,9 @@ controller. Installation aborts with a clear message if TwoFactorAuth is active.
 
 - **Per-user opt-in** from a "Two-factor authentication" tab on the user's own
   page: scan a QR code, confirm with a live code, done.
+- **Passkeys** (hardware key, Touch ID / Face ID, Windows Hello) as an
+  alternative second factor, several per account — see [TODO](#todo), they are
+  not yet tested against a real authenticator.
 - **10 single-use recovery codes**, shown once at enrollment, stored hashed.
 - **"Remember this device"** for a configurable number of days (default 14,
   `0` disables the feature).
@@ -107,12 +110,13 @@ already requires all three, so a working Omeka is a working environment for this
 `openssl` is needed only by the passkey work and is present on essentially every
 PHP install.
 
-Passkeys, once they land, will additionally require the site to be served over
-**HTTPS** — WebAuthn refuses to run on plain HTTP (bar `localhost`). TOTP has no
-such requirement.
+**Passkeys additionally require the site to be served over HTTPS** — WebAuthn
+refuses to run on plain HTTP (bar `localhost`). TOTP has no such requirement.
 
-JavaScript is used only to draw the QR code. Without it the setup page still
-works — it shows the secret as text for manual entry.
+JavaScript draws the QR code and runs the passkey ceremony. Without it TOTP
+still works — the setup page shows the secret as text for manual entry — but
+passkeys cannot work at all, and the pages say so rather than offering a button
+that would fail.
 
 ## Dependencies
 
@@ -120,7 +124,7 @@ works — it shows the secret as text for manual entry.
 
 | Package | Version | Licence | Why |
 |---|---|---|---|
-| [`lbuchs/webauthn`](https://github.com/lbuchs/WebAuthn) | `^2.2` | MIT | WebAuthn/passkey support. **Not yet used** — see [TODO](#todo). |
+| [`lbuchs/webauthn`](https://github.com/lbuchs/WebAuthn) | `^2.2` | MIT | Passkey registration and verification. |
 
 It was picked over the more widely known `web-auth/webauthn-lib` specifically
 because it has **zero transitive dependencies**. That matters more than it
@@ -139,8 +143,11 @@ composer install --no-dev
 `vendor/` is deliberately **not** committed. The module is written to boot
 without it: the autoloader is loaded only `if (file_exists(...))`, because this
 module replaces the login controller and a fatal there would lock everyone out.
-Until `composer install` has run, passkey features are simply unavailable —
-TOTP, recovery codes and login are unaffected.
+Until `composer install` has run, passkey features are simply unavailable and
+say so — TOTP, recovery codes and login are unaffected. An account that already
+holds a passkey still counts as needing a second factor in that state, so it is
+held at the second step rather than admitted on its password; its recovery codes
+still work.
 
 The RFC 4226/6238 implementation is about 200 lines of `hash_hmac` and base32 in
 `src/Service/Totp.php`, pinned to the published RFC test vectors, and needs
@@ -188,6 +195,7 @@ it first.
 | Setting | Default | |
 |---|---|---|
 | Issuer name | installation title | Shown next to the account in the app. |
+| Passkey domain | site's host | The domain passkeys are bound to. Changing it invalidates every registered passkey. |
 | Required roles | none | Roles that must use 2FA. |
 | Remember a device for (days) | 14 | `0` removes the option entirely. |
 | Accepted time steps either side | 1 | Clock-drift tolerance, in 30s steps. |
@@ -278,7 +286,8 @@ Translations are generated — see `language/README.md`.
 ## TODO
 
 - **WebAuthn / passkeys** as a second factor (hardware keys, Touch ID / Face ID,
-  Windows Hello) — **in progress on the `passkeys` branch.** Phishing-resistant
+  Windows Hello) — **feature-complete on the `passkeys` branch, awaiting
+  testing against real authenticators.** Phishing-resistant
   in a way TOTP is not: a TOTP code can still be relayed through a proxy in real
   time, whereas a passkey is bound to the origin. An *additional* factor type
   alongside TOTP, not a replacement — TOTP needs no special hardware and works on
@@ -287,15 +296,17 @@ Translations are generated — see `language/README.md`.
   Done so far: the dependency (`lbuchs/webauthn`), the credential table,
   recovery codes moved off the TOTP enrollment onto the user — so an account
   whose only factor is a passkey will still have a way back in — the factor
-  registry, so the login path no longer assumes TOTP, the passkey manager,
-  challenge store and factor, and the **login** half of the ceremony — page,
-  JSON endpoints and browser script. **There is still no way to register a
-  passkey, so nobody has one and none of it is reachable yet.** Still to come:
-  the enrollment pages, the factor chooser and the configuration form.
+  registry, the passkey manager, challenge store and factor, and both halves of
+  the ceremony: registering a passkey from the user page, and presenting one at
+  the second step. Settings gained a **Passkey domain**.
 
-  Login before enrollment is deliberate: a user holding a passkey owes a second
-  factor, so shipping enrollment first would strand the first person to use it
-  with nowhere to present it.
+  **Not yet exercised against a real authenticator.** The end-to-end tests cover
+  the server contract — both endpoints refuse a request with no pending login,
+  a challenge is refused for an account holding no credential, and verify is
+  refused with no outstanding challenge — but `curl` cannot produce a signature,
+  so the ceremony itself needs a hardware key, a platform authenticator, or a
+  virtual one driven over the Chrome DevTools protocol. Treat it as untested
+  until that has been done.
 
   One design note worth keeping: a user holding a passkey counts as enrolled
   even when the WebAuthn library is missing. Reporting otherwise would let them

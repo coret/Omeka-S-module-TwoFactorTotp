@@ -10,6 +10,7 @@ use Laminas\View\Model\ViewModel;
 use Omeka\Entity\User;
 use TwoFactorTotp\Form\OtpForm;
 use TwoFactorTotp\Form\RecoveryCodeForm;
+use TwoFactorTotp\Service\PasskeyManager;
 use TwoFactorTotp\Service\TotpManager;
 use TwoFactorTotp\Service\TrustedDeviceManager;
 use TwoFactorTotp\Stdlib\PendingLogin;
@@ -35,18 +36,22 @@ class OtpController extends AbstractActionController
 
     protected PendingLogin $pendingLogin;
 
+    protected PasskeyManager $passkeys;
+
     public function __construct(
         EntityManager $entityManager,
         AuthenticationService $auth,
         TotpManager $totpManager,
         TrustedDeviceManager $trustedDevices,
-        PendingLogin $pendingLogin
+        PendingLogin $pendingLogin,
+        PasskeyManager $passkeys
     ) {
         $this->entityManager = $entityManager;
         $this->auth = $auth;
         $this->totpManager = $totpManager;
         $this->trustedDevices = $trustedDevices;
         $this->pendingLogin = $pendingLogin;
+        $this->passkeys = $passkeys;
     }
 
     public function otpAction()
@@ -90,6 +95,11 @@ class OtpController extends AbstractActionController
         $view->setVariable('secondsRemaining', $this->pendingLogin->getSecondsRemaining());
         $view->setVariable('remainingAttempts', $this->pendingLogin->getRemainingAttempts());
         $view->setVariable('recoveryUrl', $this->url()->fromRoute('two-factor', ['action' => 'recovery']));
+        // Only offered when they actually hold one, so the code screen does not
+        // advertise a route that would dead-end.
+        $view->setVariable('passkeyUrl', $this->passkeys->countForUser($user)
+            ? $this->url()->fromRoute('two-factor-passkey')
+            : null);
         return $view;
     }
 

@@ -523,11 +523,14 @@ foreach (['/src', ''] as $dir) {
         }
         // The 'string', // @translate idiom Omeka's own extractor reads.
         preg_match_all(
-            '/[\'"]((?:[^\'"\\\\]|\\\\.)+)[\'"]\s*;?\s*(?:\/\/|#)\s*@translate/',
+            // Backreference on the quote so the other quote character is
+            // allowed inside: several strings contain "quoted" words, and a
+            // naive pattern stops at the first one and reports a phantom.
+            '/([\'"])((?:(?!\\1)[^\\\\]|\\\\.)*)\\1\s*[,;)]?\s*(?:\/\/|#)\s*@translate/',
             (string) file_get_contents($path),
             $literals
         );
-        foreach ($literals[1] as $literal) {
+        foreach ($literals[2] as $literal) {
             $translatable[stripcslashes($literal)] = basename($path);
         }
     }

@@ -33,6 +33,12 @@ msgstr "Naam van de uitgever"
 msgid "The name shown next to the account in the authenticator app. Leave empty to use the installation title."
 msgstr "De naam die naast het account in de authenticator-app wordt getoond. Laat leeg om de titel van de installatie te gebruiken."
 
+msgid "Passkey domain"
+msgstr "Passkey-domein"
+
+msgid "The domain passkeys are bound to. Leave empty to use the host the site is served from, which is right unless the site answers on more than one name. Changing it invalidates every passkey already registered."
+msgstr "Het domein waaraan passkeys gebonden zijn. Laat leeg om de host te gebruiken waarop de site draait; dat klopt tenzij de site op meerdere namen reageert. Wijzigen maakt elke al geregistreerde passkey ongeldig."
+
 msgid "Require two-factor authentication for these roles"
 msgstr "Tweefactorauthenticatie verplichten voor deze rollen"
 
@@ -111,6 +117,12 @@ msgstr "Ongeldige code. Nog %d pogingen over."
 msgid "Email or password is invalid"
 msgstr "E-mailadres of wachtwoord is ongeldig"
 
+msgid "Invalid or missing CSRF token"
+msgstr "Ongeldig of ontbrekend CSRF-token"
+
+msgid "Passkey removed."
+msgstr "Passkey verwijderd."
+
 msgid "Two-factor authentication is already enabled for your account."
 msgstr "Tweefactorauthenticatie is al ingeschakeld voor je account."
 
@@ -137,9 +149,6 @@ msgstr "Nieuwe herstelcodes genereren"
 
 msgid "New recovery codes generated. Your previous codes no longer work."
 msgstr "Nieuwe herstelcodes gegenereerd. Je vorige codes werken niet meer."
-
-msgid "Invalid or missing CSRF token"
-msgstr "Ongeldig of ontbrekend CSRF-token"
 
 msgid "Device revoked."
 msgstr "Apparaat ingetrokken."
@@ -190,6 +199,12 @@ msgstr "2. Scan deze code"
 
 msgid "3. Confirm"
 msgstr "3. Bevestig"
+
+msgid "A passkey lets you finish logging in with a hardware key, a fingerprint or your device unlock, instead of typing a code."
+msgstr "Met een passkey rond je het inloggen af met een hardwaresleutel, een vingerafdruk of de ontgrendeling van je apparaat, in plaats van een code te typen."
+
+msgid "Add a passkey"
+msgstr "Een passkey toevoegen"
 
 msgid "Add a second step to your login using an authenticator app on your phone, so a stolen password is not enough on its own."
 msgstr "Voeg een tweede stap toe aan je login met een authenticator-app op je telefoon, zodat een gestolen wachtwoord op zichzelf niet genoeg is."
@@ -251,6 +266,15 @@ msgstr "Laatst gebruikt"
 msgid "Manage trusted devices"
 msgstr "Vertrouwde apparaten beheren"
 
+msgid "Name (optional)"
+msgstr "Naam (optioneel)"
+
+msgid "Never"
+msgstr "Nooit"
+
+msgid "No passkeys registered."
+msgstr "Geen passkeys geregistreerd."
+
 msgid "No trusted devices."
 msgstr "Geen vertrouwde apparaten."
 
@@ -260,6 +284,16 @@ msgstr "Nog maar %d herstelcodes over. Genereer een nieuwe set zodat je niet bui
 
 msgid "Only the account holder can set this up — nobody else can see or change their secret."
 msgstr "Alleen de accounthouder kan dit instellen — niemand anders kan die sleutel zien of wijzigen."
+
+msgid "Passkey"
+msgstr "Passkey"
+
+msgid "Passkeys"
+msgstr "Passkeys"
+
+#, php-format
+msgid "Passkeys (%d)"
+msgstr "Passkeys (%d)"
 
 msgid "Passkeys are not available on this installation."
 msgstr "Passkeys zijn niet beschikbaar op deze installatie."
@@ -285,6 +319,9 @@ msgstr "Tweefactorauthenticatie instellen"
 
 msgid "That did not work. Try again, or use another way in."
 msgstr "Dat werkte niet. Probeer het opnieuw of gebruik een andere manier om in te loggen."
+
+msgid "That passkey is already registered."
+msgstr "Die passkey is al geregistreerd."
 
 msgid "These browsers skip the code screen until their trust expires. Revoke any you no longer use or recognise."
 msgstr "Deze browsers slaan het codescherm over totdat hun vertrouwen verloopt. Trek de apparaten in die je niet meer gebruikt of herkent."
@@ -341,6 +378,9 @@ msgstr "Type: tijdgebaseerd · Cijfers: 6 · Interval: 30 seconden · Algoritme:
 msgid "Unknown device"
 msgstr "Onbekend apparaat"
 
+msgid "Unnamed passkey"
+msgstr "Naamloze passkey"
+
 msgid "Use a recovery code"
 msgstr "Een herstelcode gebruiken"
 
@@ -358,6 +398,9 @@ msgstr "Gebruikers"
 
 msgid "Users enable two-factor authentication themselves, from the \"Two-factor authentication\" tab on their own user page. These settings apply to everyone."
 msgstr "Gebruikers schakelen tweefactorauthenticatie zelf in, via het tabblad \"Tweefactorauthenticatie\" op hun eigen gebruikerspagina. Deze instellingen gelden voor iedereen."
+
+msgid "Work laptop"
+msgstr "Werklaptop"
 
 msgid "You are asked for a code from your authenticator app when you log in."
 msgstr "Bij het inloggen wordt om een code uit je authenticator-app gevraagd."
