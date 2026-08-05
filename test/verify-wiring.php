@@ -424,6 +424,55 @@ foreach ($controllerFiles as $controllerFile) {
     }
 }
 
+echo "\n== the login path asks the registry, not one factor ==\n";
+// The regression this guards: if the adapter goes back to asking a single
+// factor, a user enrolled in any *other* factor is waved through on their
+// password alone. It fails open, and silently.
+$adapterSource = (string) file_get_contents(
+    $moduleDir . '/src/Authentication/Adapter/SecondFactorAdapter.php'
+);
+check(
+    'SecondFactorAdapter asks the registry whether a factor is owed',
+    str_contains($adapterSource, 'registry->hasAnyEnrolled')
+);
+check(
+    'SecondFactorAdapter does not depend on TotpManager',
+    !str_contains($adapterSource, 'TotpManager')
+);
+check(
+    'every registered factor implements SecondFactorInterface',
+    (function () use ($config): bool {
+        foreach ($config['service_manager']['factories'] as $service => $_) {
+            if (str_contains($service, '\\Authentication\\Factor\\')
+                && !is_subclass_of($service, TwoFactorTotp\Authentication\SecondFactorInterface::class)
+            ) {
+                return false;
+            }
+        }
+        return true;
+    })()
+);
+// A forced user sent to a route that does not exist is a loop with no exit.
+$registry = new TwoFactorTotp\Service\SecondFactorRegistry(
+    [new TwoFactorTotp\Authentication\Factor\TotpFactor(
+        (new ReflectionClass(TwoFactorTotp\Service\TotpManager::class))->newInstanceWithoutConstructor()
+    )],
+    (new ReflectionClass(Omeka\Settings\Settings::class))->newInstanceWithoutConstructor()
+);
+[$enrollRouteName] = $registry->getEnrollmentRoute();
+// Module.php is outside the PSR-4 src/ path, so read the list from the source.
+preg_match(
+    '/ENROLLMENT_ESCAPE_ROUTES\s*=\s*\[(.*?)\];/s',
+    (string) file_get_contents($moduleDir . '/Module.php'),
+    $escapeMatch
+);
+preg_match_all("/'([^']+)'/", $escapeMatch[1] ?? '', $escapeRoutes);
+check(
+    "forced-enrollment route '$enrollRouteName' is an escape route",
+    in_array($enrollRouteName, $escapeRoutes[1] ?? [], true),
+    'escape routes: ' . implode(', ', $escapeRoutes[1] ?? [])
+);
+
 echo "\n== composer dependency is declared and loadable ==\n";
 // Both of these fail silently: a missing autoload means the classes are simply
 // absent at runtime rather than erroring at boot (deliberately, so a checkout

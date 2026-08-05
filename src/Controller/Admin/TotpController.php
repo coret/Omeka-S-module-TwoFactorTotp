@@ -11,6 +11,7 @@ use Omeka\Mvc\Exception\PermissionDeniedException;
 use TwoFactorTotp\Entity\TrustedDevice;
 use TwoFactorTotp\Form\ConfirmOtpForm;
 use TwoFactorTotp\Form\PasswordConfirmForm;
+use TwoFactorTotp\Service\SecondFactorRegistry;
 use TwoFactorTotp\Service\TotpManager;
 use TwoFactorTotp\Service\TrustedDeviceManager;
 
@@ -27,14 +28,18 @@ class TotpController extends AbstractActionController
 
     protected TrustedDeviceManager $trustedDevices;
 
+    protected SecondFactorRegistry $registry;
+
     public function __construct(
         EntityManager $entityManager,
         TotpManager $totpManager,
-        TrustedDeviceManager $trustedDevices
+        TrustedDeviceManager $trustedDevices,
+        SecondFactorRegistry $registry
     ) {
         $this->entityManager = $entityManager;
         $this->totpManager = $totpManager;
         $this->trustedDevices = $trustedDevices;
+        $this->registry = $registry;
     }
 
     /**
@@ -92,7 +97,7 @@ class TotpController extends AbstractActionController
         $view->setVariable('form', $form);
         $view->setVariable('secret', $enrollment->getSecret());
         $view->setVariable('provisioningUri', $this->totpManager->getProvisioningUri($enrollment));
-        $view->setVariable('isForced', $this->totpManager->isRoleForced($user));
+        $view->setVariable('isForced', $this->registry->isRoleForced($user));
         return $view;
     }
 
@@ -107,7 +112,7 @@ class TotpController extends AbstractActionController
             return $this->redirectToUser($user);
         }
 
-        if ($this->totpManager->isRoleForced($user)) {
+        if ($this->registry->isRoleForced($user)) {
             $this->messenger()->addError(
                 'Two-factor authentication is required for your role and cannot be turned off.' // @translate
             );

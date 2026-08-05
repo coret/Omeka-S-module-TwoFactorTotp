@@ -5,6 +5,7 @@ namespace TwoFactorTotp\Service\Factory;
 use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use TwoFactorTotp\Controller\Admin\TotpController;
+use TwoFactorTotp\Service\SecondFactorRegistry;
 use TwoFactorTotp\Service\TotpManager;
 use TwoFactorTotp\Service\TrustedDeviceManager;
 
@@ -15,7 +16,8 @@ class AdminTotpControllerFactory implements FactoryInterface
         return new TotpController(
             $services->get('Omeka\EntityManager'),
             $services->get(TotpManager::class),
-            $services->get(TrustedDeviceManager::class)
+            $services->get(TrustedDeviceManager::class),
+            $services->get(SecondFactorRegistry::class)
         );
     }
 }

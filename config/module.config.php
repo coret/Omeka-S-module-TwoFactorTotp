@@ -19,6 +19,8 @@ return [
     'service_manager' => [
         'factories' => [
             Service\Totp::class => InvokableFactory::class,
+            Authentication\Factor\TotpFactor::class => Service\Factory\TotpFactorFactory::class,
+            Service\SecondFactorRegistry::class => Service\Factory\SecondFactorRegistryFactory::class,
             Service\RecoveryCodeManager::class => Service\Factory\RecoveryCodeManagerFactory::class,
             Service\TotpManager::class => Service\Factory\TotpManagerFactory::class,
             Service\TrustedDeviceManager::class => Service\Factory\TrustedDeviceManagerFactory::class,

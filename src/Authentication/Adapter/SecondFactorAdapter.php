@@ -6,7 +6,7 @@ use Laminas\Authentication\Adapter\AbstractAdapter;
 use Laminas\Authentication\Adapter\AdapterInterface;
 use Laminas\Authentication\Result;
 use Omeka\Entity\User;
-use TwoFactorTotp\Service\TotpManager;
+use TwoFactorTotp\Service\SecondFactorRegistry;
 use TwoFactorTotp\Service\TrustedDeviceManager;
 
 /**
@@ -40,7 +40,7 @@ class SecondFactorAdapter extends AbstractAdapter
 
     protected AdapterInterface $innerAdapter;
 
-    protected TotpManager $totpManager;
+    protected SecondFactorRegistry $registry;
 
     protected TrustedDeviceManager $trustedDevices;
 
@@ -57,11 +57,11 @@ class SecondFactorAdapter extends AbstractAdapter
 
     public function __construct(
         AdapterInterface $innerAdapter,
-        TotpManager $totpManager,
+        SecondFactorRegistry $registry,
         TrustedDeviceManager $trustedDevices
     ) {
         $this->innerAdapter = $innerAdapter;
-        $this->totpManager = $totpManager;
+        $this->registry = $registry;
         $this->trustedDevices = $trustedDevices;
     }
 
@@ -87,10 +87,14 @@ class SecondFactorAdapter extends AbstractAdapter
             return $result;
         }
 
+        // Asked of the registry rather than of any one factor: a user enrolled
+        // in something this adapter had not heard of would otherwise be waved
+        // through on their password alone.
+        //
         // A user who is merely *forced* by role but not yet enrolled has no
         // second factor to present. They are let in and then confined to the
         // setup page by Module's route listener.
-        if (!$this->totpManager->isEnabled($user)) {
+        if (!$this->registry->hasAnyEnrolled($user)) {
             return $result;
         }
 

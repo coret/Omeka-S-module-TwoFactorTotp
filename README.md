@@ -69,6 +69,12 @@ result, so a password-only login is never a session. Because every login path
 goes through the adapter, a login form belonging to another module inherits the
 second factor instead of silently bypassing it.
 
+The adapter asks a *registry* (`src/Service/SecondFactorRegistry.php`) whether
+the user owes a second step, rather than asking any particular factor. That is
+the difference between "does this account have a second factor" and "does this
+account have TOTP" — and the second question fails open, waving through anyone
+enrolled in something the adapter had not been told about.
+
 API-key requests (`KeyAdapter`) are deliberately left alone — there is no human
 present to type a code, and wrapping them would break every API client.
 
@@ -278,12 +284,13 @@ Translations are generated — see `language/README.md`.
   alongside TOTP, not a replacement — TOTP needs no special hardware and works on
   any phone.
 
-  Done so far: the dependency (`lbuchs/webauthn`), the credential table, and
+  Done so far: the dependency (`lbuchs/webauthn`), the credential table,
   recovery codes moved off the TOTP enrollment onto the user — so an account
-  whose only factor is a passkey will still have a way back in. **Nothing in
-  the interface uses any of it yet.** Still to come: the factor abstraction so
-  the login step stops assuming TOTP, the login and enrollment flows, and the
-  browser-side ceremony.
+  whose only factor is a passkey will still have a way back in — and the
+  factor registry, so the login path no longer assumes TOTP. **Nothing in the
+  interface uses any of it yet.** Still to come: the passkey manager and
+  challenge storage, the login and enrollment flows, and the browser-side
+  ceremony.
 - Publish to [omeka.org/s/modules](https://omeka.org/s/modules/) and reply on
   the forum thread.
 - Optional encryption of the stored secret, keyed from

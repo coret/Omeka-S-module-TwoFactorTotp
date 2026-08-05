@@ -6,7 +6,7 @@ use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\DelegatorFactoryInterface;
 use Omeka\Authentication\Adapter\KeyAdapter;
 use TwoFactorTotp\Authentication\Adapter\SecondFactorAdapter;
-use TwoFactorTotp\Service\TotpManager;
+use TwoFactorTotp\Service\SecondFactorRegistry;
 use TwoFactorTotp\Service\TrustedDeviceManager;
 
 /**
@@ -44,7 +44,7 @@ class AuthenticationServiceDelegatorFactory implements DelegatorFactoryInterface
 
         return $authenticationService->setAdapter(new SecondFactorAdapter(
             $adapter,
-            $services->get(TotpManager::class),
+            $services->get(SecondFactorRegistry::class),
             $services->get(TrustedDeviceManager::class)
         ));
     }

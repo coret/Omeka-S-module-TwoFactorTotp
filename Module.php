@@ -397,16 +397,23 @@ class Module extends AbstractModule
             return;
         }
 
-        /** @var TotpManager $totpManager */
-        $totpManager = $services->get(TotpManager::class);
-        if (!$totpManager->mustEnroll($auth->getIdentity())) {
+        // Any enrolled factor satisfies the requirement, so this asks the
+        // registry rather than TOTP: someone with a passkey and no
+        // authenticator app must not be herded towards the TOTP setup page.
+        /** @var Service\SecondFactorRegistry $registry */
+        $registry = $services->get(Service\SecondFactorRegistry::class);
+        if (!$registry->mustEnroll($auth->getIdentity())) {
             return;
         }
 
-        $url = $event->getRouter()->assemble(
-            ['action' => 'setup'],
-            ['name' => 'admin/two-factor']
-        );
+        $enrollmentRoute = $registry->getEnrollmentRoute();
+        if (!$enrollmentRoute) {
+            // No factor is registered at all, so there is nowhere to send them.
+            // Confining them anyway would be a redirect loop with no way out.
+            return;
+        }
+        [$routeName, $routeParams] = $enrollmentRoute;
+        $url = $event->getRouter()->assemble($routeParams, ['name' => $routeName]);
 
         $messenger = new \Omeka\Mvc\Controller\Plugin\Messenger;
         $messenger->addWarning(
@@ -473,7 +480,7 @@ class Module extends AbstractModule
             'userEntity' => $userEntity,
             'isSelf' => $isSelf,
             'isEnabled' => $totpManager->isEnabled($userEntity),
-            'isForced' => $totpManager->isRoleForced($userEntity),
+            'isForced' => $services->get(Service\SecondFactorRegistry::class)->isRoleForced($userEntity),
             'recoveryCodesRemaining' => $totpManager->countRecoveryCodes($userEntity),
             'lowWaterMark' => TotpManager::RECOVERY_LOW_WATER_MARK,
             'deviceCount' => count($trustedDevices->listForUser($userEntity)),

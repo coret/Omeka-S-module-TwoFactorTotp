@@ -68,40 +68,9 @@ class TotpManager
         return $enrollment && $enrollment->isConfirmed();
     }
 
-    /**
-     * Roles for which 2FA is mandatory.
-     */
-    public function getRequiredRoles(): array
-    {
-        $roles = $this->settings->get('twofactortotp_required_roles', []);
-        return is_array($roles) ? $roles : [];
-    }
-
-    public function isRoleForced(User $user): bool
-    {
-        return in_array($user->getRole(), $this->getRequiredRoles(), true);
-    }
-
-    /**
-     * Does this login have to clear a second step?
-     *
-     * True when the user has enrolled, and also when their role makes 2FA
-     * mandatory — in the latter case they get pushed into enrollment rather
-     * than being let through.
-     */
-    public function isSecondFactorRequired(User $user): bool
-    {
-        return $this->isEnabled($user) || $this->isRoleForced($user);
-    }
-
-    /**
-     * Forced by role but not yet enrolled: must set 2FA up before doing
-     * anything else.
-     */
-    public function mustEnroll(User $user): bool
-    {
-        return $this->isRoleForced($user) && !$this->isEnabled($user);
-    }
+    // Role policy — who *must* use a second factor — moved to
+    // SecondFactorRegistry. It was never TOTP's business, and once other
+    // factors exist "forced by role" has to be satisfiable by any of them.
 
     public function getIssuer(): string
     {
