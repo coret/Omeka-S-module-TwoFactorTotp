@@ -3,7 +3,7 @@
     "description": "Two-factor authentication for Omeka S using time-based one-time passwords (TOTP, RFC 6238) from an authenticator app.",
     "type": "omeka-s-module",
     "license": "GPL-3.0-or-later",
-    "homepage": "https://github.com/coret/TwoFactorTotp",
+    "homepage": "https://github.com/coret/Omeka-S-module-TwoFactorTotp",
     "authors": [
         {
             "name": "Bob Coret",
