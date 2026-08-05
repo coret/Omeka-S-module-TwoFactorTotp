@@ -23,6 +23,8 @@ use TwoFactorTotp\Stdlib\PendingLogin;
  */
 class OtpController extends AbstractActionController
 {
+    use SecondFactorTrait;
+
     protected EntityManager $entityManager;
 
     protected AuthenticationService $auth;
@@ -154,66 +156,7 @@ class OtpController extends AbstractActionController
 
     // --------------------------------------------------------------- helpers
 
-    /**
-     * The password-verified user this session is waiting on, if any.
-     */
-    protected function pendingUser(): ?User
-    {
-        $userId = $this->pendingLogin->getUserId();
-        if (!$userId) {
-            return null;
-        }
 
-        $user = $this->entityManager->find(User::class, $userId);
-
-        // The account could have been deactivated or deleted in the seconds
-        // between the two steps.
-        if (!$user || !$user->isActive()) {
-            $this->pendingLogin->clear();
-            return null;
-        }
-
-        return $user;
-    }
-
-    /**
-     * Grant the identity. This is the only place in the module that does.
-     */
-    protected function completeLogin(User $user, bool $rememberDevice)
-    {
-        $redirectUrl = $this->pendingLogin->getRedirectUrl();
-
-        $sessionManager = Container::getDefaultManager();
-        // New session id at the moment privilege is granted, so a session
-        // fixed before login is worthless.
-        $sessionManager->regenerateId();
-
-        $this->pendingLogin->clear();
-
-        $this->auth->getStorage()->write($user);
-
-        if ($rememberDevice) {
-            $cookieValue = $this->trustedDevices->issue($user);
-            if ($cookieValue) {
-                $this->getResponse()->getHeaders()
-                    ->addHeader($this->trustedDevices->buildSetCookie($cookieValue));
-            }
-        }
-
-        $this->messenger()->addSuccess('Successfully logged in'); // @translate
-
-        // Fire the same event core fires, so Lockout, Statistics and anything
-        // else listening still see a login happen.
-        $this->getEventManager()->trigger('user.login', $user);
-
-        if ($redirectUrl) {
-            return $this->redirect()->toUrl($redirectUrl);
-        }
-        if ($this->userIsAllowed('Omeka\Controller\Admin\Index', 'browse')) {
-            return $this->redirect()->toRoute('admin');
-        }
-        return $this->redirect()->toRoute('top');
-    }
 
     /**
      * Count a wrong code and either send the user back to try again or throw
@@ -247,13 +190,6 @@ class OtpController extends AbstractActionController
         );
     }
 
-    protected function expired()
-    {
-        $this->messenger()->addError(
-            'Your login timed out. Please log in again.' // @translate
-        );
-        return $this->redirect()->toRoute('login');
-    }
 
     protected function clientIp(): string
     {

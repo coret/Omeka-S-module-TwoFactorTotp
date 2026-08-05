@@ -287,10 +287,15 @@ Translations are generated — see `language/README.md`.
   Done so far: the dependency (`lbuchs/webauthn`), the credential table,
   recovery codes moved off the TOTP enrollment onto the user — so an account
   whose only factor is a passkey will still have a way back in — the factor
-  registry, so the login path no longer assumes TOTP, and the passkey manager,
-  challenge store and factor themselves. **Nothing in the interface uses any of
-  it yet: there is no way to register a passkey, so nobody has one.** Still to
-  come: the controllers, templates and the browser-side ceremony.
+  registry, so the login path no longer assumes TOTP, the passkey manager,
+  challenge store and factor, and the **login** half of the ceremony — page,
+  JSON endpoints and browser script. **There is still no way to register a
+  passkey, so nobody has one and none of it is reachable yet.** Still to come:
+  the enrollment pages, the factor chooser and the configuration form.
+
+  Login before enrollment is deliberate: a user holding a passkey owes a second
+  factor, so shipping enrollment first would strand the first person to use it
+  with nowhere to present it.
 
   One design note worth keeping: a user holding a passkey counts as enrolled
   even when the WebAuthn library is missing. Reporting otherwise would let them

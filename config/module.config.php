@@ -45,6 +45,7 @@ return [
     'controllers' => [
         'factories' => [
             Controller\OtpController::class => Service\Factory\OtpControllerFactory::class,
+            Controller\PasskeyController::class => Service\Factory\PasskeyControllerFactory::class,
             Controller\Admin\TotpController::class => Service\Factory\AdminTotpControllerFactory::class,
         ],
         'delegators' => [
@@ -77,14 +78,7 @@ return [
                 'options' => [
                     'route' => '/two-factor[/:action]',
                     'constraints' => [
-                        // 'passkey' is listed before its controller action
-                        // exists, because PasskeyFactor already names this as
-                        // where it sends a login. Leaving it out means the
-                        // route assembles (constraints are not applied on
-                        // assembly) and then fails to match, i.e. a 404 on
-                        // somebody's second step. Unreachable until a user can
-                        // register a credential.
-                        'action' => 'otp|recovery|cancel|passkey',
+                        'action' => 'otp|recovery|cancel',
                     ],
                     'defaults' => [
                         '__NAMESPACE__' => 'TwoFactorTotp\Controller',
@@ -93,6 +87,21 @@ return [
                     ],
                 ],
             ],
+            'two-factor-passkey' => [
+                'type' => Segment::class,
+                'options' => [
+                    'route' => '/two-factor/passkey[/:action]',
+                    'constraints' => [
+                        'action' => 'challenge|verify',
+                    ],
+                    'defaults' => [
+                        '__NAMESPACE__' => 'TwoFactorTotp\\Controller',
+                        'controller' => Controller\PasskeyController::class,
+                        'action' => 'index',
+                    ],
+                ],
+            ],
+
             'admin' => [
                 'child_routes' => [
                     'two-factor' => [

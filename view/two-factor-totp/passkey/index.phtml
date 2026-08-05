@@ -1,0 +1,65 @@
+<?php
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+$this->htmlElement('body')->appendAttribute('class', 'login two-factor-totp');
+$this->headScript()->appendFile($this->assetUrl('js/passkey.js', 'TwoFactorTotp'));
+?>
+<h1><?php echo $translate('Two-step verification'); ?></h1>
+
+<?php if (!$isAvailable): ?>
+
+<div class="messages">
+    <ul class="messages"><li class="error"><?php
+        echo $translate('Passkeys are not available on this installation.');
+    ?></li></ul>
+</div>
+
+<?php else: ?>
+
+<p class="two-factor-intro">
+    <?php echo $translate('Use your passkey to finish logging in.'); ?>
+</p>
+
+<div id="totp-passkey"
+     data-challenge-url="<?php echo $escape($challengeUrl); ?>"
+     data-verify-url="<?php echo $escape($verifyUrl); ?>"
+     data-login-url="<?php echo $escape($this->url('login')); ?>"
+     data-waiting="<?php echo $escape($translate('Touch your key, or use your device unlock.')); ?>"
+     data-failed="<?php echo $escape($translate('That did not work. Try again, or use another way in.')); ?>"
+     data-cancelled="<?php echo $escape($translate('Cancelled.')); ?>"
+     data-unsupported="<?php echo $escape($translate('This browser does not support passkeys.')); ?>">
+
+    <p><button type="button" id="totp-passkey-start"><?php
+        echo $translate('Use a passkey');
+    ?></button></p>
+
+    <?php if ($offerRemember): ?>
+    <p class="totp-passkey-remember">
+        <label>
+            <input type="checkbox" id="totp-passkey-remember">
+            <?php echo sprintf($translate('Remember this device for %d days'), $rememberDays); ?>
+        </label>
+        <span class="explanation"><?php
+            echo $translate('Only tick this on a device that is yours alone.');
+        ?></span>
+    </p>
+    <?php endif; ?>
+
+    <p id="totp-passkey-status" role="status" aria-live="polite"></p>
+</div>
+
+<?php endif; ?>
+
+<p class="two-factor-alternatives">
+    <?php echo $this->hyperlink($translate('Back to the code from my app'), $otpUrl); ?>
+    &nbsp;·&nbsp;
+    <?php echo $this->hyperlink($translate('Use a recovery code instead'), $recoveryUrl); ?>
+    &nbsp;·&nbsp;
+    <?php echo $this->hyperlink($translate('Cancel'), $this->url('two-factor', ['action' => 'cancel'])); ?>
+</p>
+
+<style>
+#totp-passkey-status { min-height: 1.5em; }
+#totp-passkey-status.error { color: #a00; }
+.totp-passkey-remember .explanation { display: block; font-size: .9em; opacity: .8; }
+</style>

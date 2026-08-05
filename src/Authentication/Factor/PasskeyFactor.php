@@ -55,7 +55,7 @@ class PasskeyFactor implements SecondFactorInterface
 
     public function getChallengeRoute(): array
     {
-        return ['two-factor', ['action' => 'passkey']];
+        return ['two-factor-passkey', []];
     }
 
     public function getEnrollmentRoute(): array

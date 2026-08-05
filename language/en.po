@@ -87,6 +87,12 @@ msgstr "One of the codes you saved when you set up two-factor authentication. Ea
 msgid "Use recovery code"
 msgstr "Use recovery code"
 
+msgid "Successfully logged in"
+msgstr "Successfully logged in"
+
+msgid "Your login timed out. Please log in again."
+msgstr "Your login timed out. Please log in again."
+
 #, php-format
 msgid "You have %d recovery codes left. Generate a new set from your user page."
 msgstr "You have %d recovery codes left. Generate a new set from your user page."
@@ -95,18 +101,12 @@ msgstr "You have %d recovery codes left. Generate a new set from your user page.
 msgid "Recovery code accepted. You have %d left."
 msgstr "Recovery code accepted. You have %d left."
 
-msgid "Successfully logged in"
-msgstr "Successfully logged in"
-
 msgid "Too many incorrect codes. Please log in again."
 msgstr "Too many incorrect codes. Please log in again."
 
 #, php-format
 msgid "Invalid code. %d attempts remaining."
 msgstr "Invalid code. %d attempts remaining."
-
-msgid "Your login timed out. Please log in again."
-msgstr "Your login timed out. Please log in again."
 
 msgid "Email or password is invalid"
 msgstr "Email or password is invalid"
@@ -209,6 +209,9 @@ msgstr "Back to the code from my app"
 msgid "Cancel"
 msgstr "Cancel"
 
+msgid "Cancelled."
+msgstr "Cancelled."
+
 msgid "Can’t scan? Enter this key by hand"
 msgstr "Can’t scan? Enter this key by hand"
 
@@ -258,6 +261,9 @@ msgstr "Only %d recovery codes left. Generate a new set so you are not locked ou
 msgid "Only the account holder can set this up — nobody else can see or change their secret."
 msgstr "Only the account holder can set this up — nobody else can see or change their secret."
 
+msgid "Passkeys are not available on this installation."
+msgstr "Passkeys are not available on this installation."
+
 msgid "Print"
 msgstr "Print"
 
@@ -277,17 +283,26 @@ msgstr "Server time is %s. If this is more than about half a minute away from re
 msgid "Set up two-factor authentication"
 msgstr "Set up two-factor authentication"
 
+msgid "That did not work. Try again, or use another way in."
+msgstr "That did not work. Try again, or use another way in."
+
 msgid "These browsers skip the code screen until their trust expires. Revoke any you no longer use or recognise."
 msgstr "These browsers skip the code screen until their trust expires. Revoke any you no longer use or recognise."
 
 msgid "These codes are shown once and cannot be retrieved again. Save them somewhere safe and away from the device running your authenticator app — they are the only way back in if you lose your phone."
 msgstr "These codes are shown once and cannot be retrieved again. Save them somewhere safe and away from the device running your authenticator app — they are the only way back in if you lose your phone."
 
+msgid "This browser does not support passkeys."
+msgstr "This browser does not support passkeys."
+
 msgid "This removes the second factor from another person’s account. Only do this when you are certain who you are talking to — anyone who can pass this check can take the account over with the password alone."
 msgstr "This removes the second factor from another person’s account. Only do this when you are certain who you are talking to — anyone who can pass this check can take the account over with the password alone."
 
 msgid "This removes the second factor from your account, deletes your recovery codes, and signs out every device you had marked as trusted. Your account will be protected by its password alone."
 msgstr "This removes the second factor from your account, deletes your recovery codes, and signs out every device you had marked as trusted. Your account will be protected by its password alone."
+
+msgid "Touch your key, or use your device unlock."
+msgstr "Touch your key, or use your device unlock."
 
 msgid "Trusted devices"
 msgstr "Trusted devices"
@@ -334,6 +349,9 @@ msgstr "Use a recovery code instead"
 
 msgid "Use this when the person has lost their phone and their recovery codes. They will be emailed, and the reset is logged."
 msgstr "Use this when the person has lost their phone and their recovery codes. They will be emailed, and the reset is logged."
+
+msgid "Use your passkey to finish logging in."
+msgstr "Use your passkey to finish logging in."
 
 msgid "Users"
 msgstr "Users"

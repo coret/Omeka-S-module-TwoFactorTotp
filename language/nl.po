@@ -87,6 +87,12 @@ msgstr "Een van de codes die je hebt opgeslagen toen je tweefactorauthenticatie 
 msgid "Use recovery code"
 msgstr "Herstelcode gebruiken"
 
+msgid "Successfully logged in"
+msgstr "Succesvol ingelogd"
+
+msgid "Your login timed out. Please log in again."
+msgstr "Je login is verlopen. Log opnieuw in."
+
 #, php-format
 msgid "You have %d recovery codes left. Generate a new set from your user page."
 msgstr "Je hebt nog %d herstelcodes. Genereer een nieuwe set via je gebruikerspagina."
@@ -95,18 +101,12 @@ msgstr "Je hebt nog %d herstelcodes. Genereer een nieuwe set via je gebruikerspa
 msgid "Recovery code accepted. You have %d left."
 msgstr "Herstelcode geaccepteerd. Je hebt er nog %d."
 
-msgid "Successfully logged in"
-msgstr "Succesvol ingelogd"
-
 msgid "Too many incorrect codes. Please log in again."
 msgstr "Te veel onjuiste codes. Log opnieuw in."
 
 #, php-format
 msgid "Invalid code. %d attempts remaining."
 msgstr "Ongeldige code. Nog %d pogingen over."
-
-msgid "Your login timed out. Please log in again."
-msgstr "Je login is verlopen. Log opnieuw in."
 
 msgid "Email or password is invalid"
 msgstr "E-mailadres of wachtwoord is ongeldig"
@@ -209,6 +209,9 @@ msgstr "Terug naar de code uit mijn app"
 msgid "Cancel"
 msgstr "Annuleer"
 
+msgid "Cancelled."
+msgstr "Geannuleerd."
+
 msgid "Can’t scan? Enter this key by hand"
 msgstr "Kun je niet scannen? Voer deze sleutel handmatig in"
 
@@ -258,6 +261,9 @@ msgstr "Nog maar %d herstelcodes over. Genereer een nieuwe set zodat je niet bui
 msgid "Only the account holder can set this up — nobody else can see or change their secret."
 msgstr "Alleen de accounthouder kan dit instellen — niemand anders kan die sleutel zien of wijzigen."
 
+msgid "Passkeys are not available on this installation."
+msgstr "Passkeys zijn niet beschikbaar op deze installatie."
+
 msgid "Print"
 msgstr "Afdrukken"
 
@@ -277,17 +283,26 @@ msgstr "De servertijd is %s. Wijkt dit meer dan ongeveer een halve minuut af van
 msgid "Set up two-factor authentication"
 msgstr "Tweefactorauthenticatie instellen"
 
+msgid "That did not work. Try again, or use another way in."
+msgstr "Dat werkte niet. Probeer het opnieuw of gebruik een andere manier om in te loggen."
+
 msgid "These browsers skip the code screen until their trust expires. Revoke any you no longer use or recognise."
 msgstr "Deze browsers slaan het codescherm over totdat hun vertrouwen verloopt. Trek de apparaten in die je niet meer gebruikt of herkent."
 
 msgid "These codes are shown once and cannot be retrieved again. Save them somewhere safe and away from the device running your authenticator app — they are the only way back in if you lose your phone."
 msgstr "Deze codes worden één keer getoond en kunnen daarna niet meer worden opgehaald. Bewaar ze op een veilige plek, los van het apparaat waarop je authenticator-app draait — ze zijn de enige manier om weer binnen te komen als je je telefoon kwijtraakt."
 
+msgid "This browser does not support passkeys."
+msgstr "Deze browser ondersteunt geen passkeys."
+
 msgid "This removes the second factor from another person’s account. Only do this when you are certain who you are talking to — anyone who can pass this check can take the account over with the password alone."
 msgstr "Hiermee verwijder je de tweede factor van het account van iemand anders. Doe dit alleen als je zeker weet met wie je spreekt — wie deze controle passeert, kan het account met alleen het wachtwoord overnemen."
 
 msgid "This removes the second factor from your account, deletes your recovery codes, and signs out every device you had marked as trusted. Your account will be protected by its password alone."
 msgstr "Hiermee verwijder je de tweede factor van je account, worden je herstelcodes gewist en worden alle apparaten die je als vertrouwd had gemarkeerd uitgelogd. Je account wordt dan alleen nog door het wachtwoord beschermd."
+
+msgid "Touch your key, or use your device unlock."
+msgstr "Raak je sleutel aan of gebruik de ontgrendeling van je apparaat."
 
 msgid "Trusted devices"
 msgstr "Vertrouwde apparaten"
@@ -334,6 +349,9 @@ msgstr "Gebruik in plaats daarvan een herstelcode"
 
 msgid "Use this when the person has lost their phone and their recovery codes. They will be emailed, and the reset is logged."
 msgstr "Gebruik dit wanneer diegene zowel de telefoon als de herstelcodes kwijt is. Diegene krijgt een e-mail en de reset wordt gelogd."
+
+msgid "Use your passkey to finish logging in."
+msgstr "Gebruik je passkey om het inloggen af te ronden."
 
 msgid "Users"
 msgstr "Gebruikers"

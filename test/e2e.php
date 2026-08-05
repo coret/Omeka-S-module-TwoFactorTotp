@@ -201,5 +201,29 @@ check('devices page has a working csrf element (regression)', !str_contains($dev
 $regen = http(BASE . '/admin/two-factor/recovery-codes');
 check('recovery-codes page offers a password form (regression)', str_contains($regen['body'], 'type="password"'));
 
+echo "\n== 9. passkey server contract ==\n";
+// curl cannot perform a WebAuthn ceremony -- that needs a real authenticator or
+// a Chrome DevTools virtual one. What it can check is that the endpoints refuse
+// everything they should before any signature is involved.
+$noSession = http(BASE . '/two-factor/passkey/challenge', []);
+check('challenge without a pending login is refused', 440 === $noSession['code'], (string) $noSession['code']);
+$noSessionVerify = http(BASE . '/two-factor/passkey/verify', []);
+check('verify without a pending login is refused', 440 === $noSessionVerify['code'], (string) $noSessionVerify['code']);
+
+$at = loginToSecondStep();
+check('a pending login reaches the passkey page', 200 === http(BASE . '/two-factor/passkey')['code']);
+$noCreds = http(BASE . '/two-factor/passkey/challenge', []);
+check(
+    'challenge for a user with no passkey is refused',
+    409 === $noCreds['code'],
+    (string) $noCreds['code']
+);
+$noChallenge = http(BASE . '/two-factor/passkey/verify', []);
+check(
+    'verify without an outstanding challenge is refused',
+    409 === $noChallenge['code'],
+    (string) $noChallenge['code']
+);
+
 printf("\n----------------------------------------\n%d passed, %d failed\n\n", $pass, $fail);
 exit($fail > 0 ? 1 : 0);

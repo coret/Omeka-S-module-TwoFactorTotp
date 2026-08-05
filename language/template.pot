@@ -106,31 +106,31 @@ msgstr ""
 msgid "Use recovery code"
 msgstr ""
 
-#: Controller/OtpController.php:121
+#: Controller/SecondFactorTrait.php:67 Controller/LoginController.php:81
+msgid "Successfully logged in"
+msgstr ""
+
+#: Controller/SecondFactorTrait.php:85
+msgid "Your login timed out. Please log in again."
+msgstr ""
+
+#: Controller/OtpController.php:123
 #, php-format
 msgid "You have %d recovery codes left. Generate a new set from your user page."
 msgstr ""
 
-#: Controller/OtpController.php:126
+#: Controller/OtpController.php:128
 #, php-format
 msgid "Recovery code accepted. You have %d left."
 msgstr ""
 
-#: Controller/OtpController.php:203 Controller/LoginController.php:81
-msgid "Successfully logged in"
-msgstr ""
-
-#: Controller/OtpController.php:234
+#: Controller/OtpController.php:177
 msgid "Too many incorrect codes. Please log in again."
 msgstr ""
 
-#: Controller/OtpController.php:240
+#: Controller/OtpController.php:183
 #, php-format
 msgid "Invalid code. %d attempts remaining."
-msgstr ""
-
-#: Controller/OtpController.php:253
-msgid "Your login timed out. Please log in again."
 msgstr ""
 
 #: Controller/LoginController.php:107
@@ -201,15 +201,15 @@ msgstr ""
 msgid "Use a passkey"
 msgstr ""
 
-#: Module.php:312
+#: Module.php:313
 msgid "The TwoFactorAuth module is active. Both modules replace the login controller, so they cannot run together. Disable TwoFactorAuth first."
 msgstr ""
 
-#: Module.php:420
+#: Module.php:426
 msgid "Two-factor authentication is required for your role. Set it up to continue."
 msgstr ""
 
-#: Module.php:455
+#: Module.php:461
 msgid "Two-factor authentication"
 msgstr ""
 
@@ -262,12 +262,18 @@ msgid "Any TOTP app works — for example Google Authenticator, Aegis, FreeOTP, 
 msgstr ""
 
 #: view/two-factor-totp/otp/recovery.phtml:14
+#: view/two-factor-totp/passkey/index.phtml:54
 msgid "Back to the code from my app"
 msgstr ""
 
 #: view/two-factor-totp/otp/otp.phtml:17
 #: view/two-factor-totp/otp/recovery.phtml:16
+#: view/two-factor-totp/passkey/index.phtml:58
 msgid "Cancel"
+msgstr ""
+
+#: view/two-factor-totp/passkey/index.phtml:29
+msgid "Cancelled."
 msgstr ""
 
 #: view/two-factor-totp/admin/totp/setup.phtml:38
@@ -336,6 +342,10 @@ msgstr ""
 msgid "Only the account holder can set this up — nobody else can see or change their secret."
 msgstr ""
 
+#: view/two-factor-totp/passkey/index.phtml:13
+msgid "Passkeys are not available on this installation."
+msgstr ""
+
 #: view/two-factor-totp/admin/totp/recovery-codes.phtml:23
 msgid "Print"
 msgstr ""
@@ -362,6 +372,10 @@ msgstr ""
 msgid "Set up two-factor authentication"
 msgstr ""
 
+#: view/two-factor-totp/passkey/index.phtml:28
+msgid "That did not work. Try again, or use another way in."
+msgstr ""
+
 #: view/two-factor-totp/admin/totp/devices.phtml:15
 msgid "These browsers skip the code screen until their trust expires. Revoke any you no longer use or recognise."
 msgstr ""
@@ -370,12 +384,20 @@ msgstr ""
 msgid "These codes are shown once and cannot be retrieved again. Save them somewhere safe and away from the device running your authenticator app — they are the only way back in if you lose your phone."
 msgstr ""
 
+#: view/two-factor-totp/passkey/index.phtml:30
+msgid "This browser does not support passkeys."
+msgstr ""
+
 #: view/two-factor-totp/admin/totp/reset.phtml:19
 msgid "This removes the second factor from another person’s account. Only do this when you are certain who you are talking to — anyone who can pass this check can take the account over with the password alone."
 msgstr ""
 
 #: view/two-factor-totp/admin/totp/disable.phtml:9
 msgid "This removes the second factor from your account, deletes your recovery codes, and signs out every device you had marked as trusted. Your account will be protected by its password alone."
+msgstr ""
+
+#: view/two-factor-totp/passkey/index.phtml:27
+msgid "Touch your key, or use your device unlock."
 msgstr ""
 
 #: view/two-factor-totp/admin/totp/devices.phtml:13
@@ -416,6 +438,7 @@ msgid "Two-factor authentication, all recovery codes and all trusted devices wil
 msgstr ""
 
 #: view/two-factor-totp/otp/otp.phtml:6
+#: view/two-factor-totp/passkey/index.phtml:7
 msgid "Two-step verification"
 msgstr ""
 
@@ -432,11 +455,16 @@ msgid "Use a recovery code"
 msgstr ""
 
 #: view/two-factor-totp/otp/otp.phtml:15
+#: view/two-factor-totp/passkey/index.phtml:56
 msgid "Use a recovery code instead"
 msgstr ""
 
 #: view/two-factor-totp/common/user-tab.phtml:119
 msgid "Use this when the person has lost their phone and their recovery codes. They will be emailed, and the reset is logged."
+msgstr ""
+
+#: view/two-factor-totp/passkey/index.phtml:20
+msgid "Use your passkey to finish logging in."
 msgstr ""
 
 #: view/two-factor-totp/admin/totp/devices.phtml:13

@@ -44,6 +44,7 @@ class Module extends AbstractModule
         'login',
         'logout',
         'two-factor',
+        'two-factor-passkey',
     ];
 
     public function getConfig()
@@ -339,7 +340,12 @@ class Module extends AbstractModule
 
         // Step 2 of the login happens *before* the identity exists, so it has
         // to be reachable with no role at all.
-        $acl->allow(null, [Controller\OtpController::class]);
+        $acl->allow(null, [
+            Controller\OtpController::class,
+            // Same reasoning: the user has cleared the password but holds no
+            // identity yet, and will not until the factor passes.
+            Controller\PasskeyController::class,
+        ]);
 
         $allRoles = array_keys($acl->getRoleLabels());
 
