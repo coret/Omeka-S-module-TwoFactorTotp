@@ -97,6 +97,17 @@ password. Passkeys are registered without requiring a discoverable credential
 
 Adding passwordless login later would mean re-registering existing passkeys.
 
+Why offer passkeys at all when TOTP already works: a TOTP code can be relayed
+through a proxy in real time, whereas a passkey is bound to the origin and
+cannot be. TOTP stays because it needs no special hardware and works on any
+phone — the two sit alongside each other, and an account may hold either or
+both.
+
+One thing to know when reading `two_factor_totp_webauthn_credential`: a
+`sign_count` that stays at zero is normal. Plenty of platform authenticators
+never increment it, so only a counter going *backwards* is treated as a
+possible cloning signal.
+
 Other things worth knowing:
 
 - A TOTP code is **single-use**: the highest counter already spent is persisted
@@ -301,38 +312,9 @@ Translations are generated — see `language/README.md`.
 
 ## TODO
 
-- **WebAuthn / passkeys** as a second factor (hardware keys, Touch ID / Face ID,
-  Windows Hello) — **complete on the `passkeys` branch**, registered and used to
-  log in against a real platform authenticator. Phishing-resistant
-  in a way TOTP is not: a TOTP code can still be relayed through a proxy in real
-  time, whereas a passkey is bound to the origin. An *additional* factor type
-  alongside TOTP, not a replacement — TOTP needs no special hardware and works on
-  any phone.
-
-  Done so far: the dependency (`lbuchs/webauthn`), the credential table,
-  recovery codes moved off the TOTP enrollment onto the user — so an account
-  whose only factor is a passkey will still have a way back in — the factor
-  registry, the passkey manager, challenge store and factor, and both halves of
-  the ceremony: registering a passkey from the user page, and presenting one at
-  the second step. Settings gained a **Passkey domain**.
-
-  The end-to-end tests cover the server contract — both endpoints refuse a
-  request with no pending login, a challenge is refused for an account holding
-  no credential, and verify is refused with no outstanding challenge. `curl`
-  cannot produce a signature, so the ceremony itself was exercised by hand:
-  registered on a platform authenticator, then used to complete a login.
-
-  Automating that would need a virtual authenticator driven over the Chrome
-  DevTools protocol, which is the obvious next improvement to `test/e2e.php`.
-
-  A note for anyone reading the credential table: a `sign_count` that stays at
-  zero is normal. Plenty of platform authenticators never increment it, so only
-  a counter that goes *backwards* is treated as a cloning signal.
-
-  One design note worth keeping: a user holding a passkey counts as enrolled
-  even when the WebAuthn library is missing. Reporting otherwise would let them
-  log in on their password alone, so the module holds them at the second step
-  and says what is wrong. Their recovery codes still work.
+- Automate the passkey ceremony in `test/e2e.php` with a virtual authenticator
+  driven over the Chrome DevTools protocol. `curl` cannot produce a signature,
+  so registering and presenting a passkey is currently checked by hand.
 - Publish to [omeka.org/s/modules](https://omeka.org/s/modules/) and reply on
   the forum thread.
 - Optional encryption of the stored secret, keyed from
