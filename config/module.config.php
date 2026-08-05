@@ -20,7 +20,10 @@ return [
         'factories' => [
             Service\Totp::class => InvokableFactory::class,
             Authentication\Factor\TotpFactor::class => Service\Factory\TotpFactorFactory::class,
+            Authentication\Factor\PasskeyFactor::class => Service\Factory\PasskeyFactorFactory::class,
+            Service\PasskeyManager::class => Service\Factory\PasskeyManagerFactory::class,
             Service\SecondFactorRegistry::class => Service\Factory\SecondFactorRegistryFactory::class,
+            Stdlib\ChallengeStore::class => Service\Factory\ChallengeStoreFactory::class,
             Service\RecoveryCodeManager::class => Service\Factory\RecoveryCodeManagerFactory::class,
             Service\TotpManager::class => Service\Factory\TotpManagerFactory::class,
             Service\TrustedDeviceManager::class => Service\Factory\TrustedDeviceManagerFactory::class,
@@ -74,7 +77,14 @@ return [
                 'options' => [
                     'route' => '/two-factor[/:action]',
                     'constraints' => [
-                        'action' => 'otp|recovery|cancel',
+                        // 'passkey' is listed before its controller action
+                        // exists, because PasskeyFactor already names this as
+                        // where it sends a login. Leaving it out means the
+                        // route assembles (constraints are not applied on
+                        // assembly) and then fails to match, i.e. a 404 on
+                        // somebody's second step. Unreachable until a user can
+                        // register a credential.
+                        'action' => 'otp|recovery|cancel|passkey',
                     ],
                     'defaults' => [
                         '__NAMESPACE__' => 'TwoFactorTotp\Controller',

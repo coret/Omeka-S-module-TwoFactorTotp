@@ -286,11 +286,16 @@ Translations are generated — see `language/README.md`.
 
   Done so far: the dependency (`lbuchs/webauthn`), the credential table,
   recovery codes moved off the TOTP enrollment onto the user — so an account
-  whose only factor is a passkey will still have a way back in — and the
-  factor registry, so the login path no longer assumes TOTP. **Nothing in the
-  interface uses any of it yet.** Still to come: the passkey manager and
-  challenge storage, the login and enrollment flows, and the browser-side
-  ceremony.
+  whose only factor is a passkey will still have a way back in — the factor
+  registry, so the login path no longer assumes TOTP, and the passkey manager,
+  challenge store and factor themselves. **Nothing in the interface uses any of
+  it yet: there is no way to register a passkey, so nobody has one.** Still to
+  come: the controllers, templates and the browser-side ceremony.
+
+  One design note worth keeping: a user holding a passkey counts as enrolled
+  even when the WebAuthn library is missing. Reporting otherwise would let them
+  log in on their password alone, so the module holds them at the second step
+  and says what is wrong. Their recovery codes still work.
 - Publish to [omeka.org/s/modules](https://omeka.org/s/modules/) and reply on
   the forum thread.
 - Optional encryption of the stored secret, keyed from

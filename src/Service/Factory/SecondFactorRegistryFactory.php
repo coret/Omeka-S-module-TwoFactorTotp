@@ -4,6 +4,7 @@ namespace TwoFactorTotp\Service\Factory;
 
 use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
+use TwoFactorTotp\Authentication\Factor\PasskeyFactor;
 use TwoFactorTotp\Authentication\Factor\TotpFactor;
 use TwoFactorTotp\Service\SecondFactorRegistry;
 
@@ -17,7 +18,11 @@ class SecondFactorRegistryFactory implements FactoryInterface
     {
         return new SecondFactorRegistry(
             [
+                // Order matters in one place only: a user forced to enroll but
+                // holding nothing is sent to the first factor's setup page.
+                // TOTP leads because it needs no special hardware.
                 $services->get(TotpFactor::class),
+                $services->get(PasskeyFactor::class),
             ],
             $services->get('Omeka\Settings')
         );

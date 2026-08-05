@@ -155,6 +155,9 @@ msgstr "Tweefactorauthenticatie resetten"
 msgid "Two-factor authentication was reset for %s."
 msgstr "Tweefactorauthenticatie is gereset voor %s."
 
+msgid "Use a passkey"
+msgstr "Een passkey gebruiken"
+
 msgid "The TwoFactorAuth module is active. Both modules replace the login controller, so they cannot run together. Disable TwoFactorAuth first."
 msgstr "De module TwoFactorAuth is actief. Beide modules vervangen de logincontroller, dus ze kunnen niet samen draaien. Schakel eerst TwoFactorAuth uit."
 

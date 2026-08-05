@@ -4,7 +4,7 @@ Shipped catalogues:
 
 | File | Locale | Notes |
 |---|---|---|
-| `template.pot` | — | Extracted source strings (108). |
+| `template.pot` | — | Extracted source strings (109). |
 | `en.po` / `en.mo` | `en` | Identity catalogue. English is the source language, but an explicit `en` locale then resolves instead of falling through to the raw msgid. |
 | `nl_NL.po` / `nl_NL.mo` | `nl_NL` | Dutch. Matches the filename Omeka core uses (`application/language/nl_NL.po`). |
 | `nl.po` / `nl.mo` | `nl` | Same Dutch content, so a plain `nl` locale resolves too. |

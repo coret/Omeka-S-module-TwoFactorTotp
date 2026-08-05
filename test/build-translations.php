@@ -118,6 +118,7 @@ $nl = [
     'Two-step verification' => 'Verificatie in twee stappen',
     'Type: time-based · Digits: 6 · Interval: 30 seconds · Algorithm: SHA1' => 'Type: tijdgebaseerd · Cijfers: 6 · Interval: 30 seconden · Algoritme: SHA1',
     'Unknown device' => 'Onbekend apparaat',
+    'Use a passkey' => 'Een passkey gebruiken',
     'Use a recovery code' => 'Een herstelcode gebruiken',
     'Use a recovery code instead' => 'Gebruik in plaats daarvan een herstelcode',
     'Use recovery code' => 'Herstelcode gebruiken',

@@ -473,6 +473,77 @@ check(
     'escape routes: ' . implode(', ', $escapeRoutes[1] ?? [])
 );
 
+// Each factor names the routes it sends users to. The *actions* for passkeys
+// arrive with its controller; the route names must already be real, or the
+// failure is an assemble() exception on somebody's login.
+foreach ($config['service_manager']['factories'] as $service => $_) {
+    if (!str_contains($service, '\\Authentication\\Factor\\')) {
+        continue;
+    }
+    $factorInstance = (new ReflectionClass($service))->newInstanceWithoutConstructor();
+    $short = substr((string) strrchr($service, '\\'), 1);
+    foreach ([
+        'challenge' => $factorInstance->getChallengeRoute(),
+        'enrollment' => $factorInstance->getEnrollmentRoute(),
+    ] as $which => [$routeName, $routeParams]) {
+        // Round-trip it. assemble() alone is not enough: it ignores the action
+        // constraints, so a factor pointing at an action the route does not
+        // allow assembles happily and then 404s on the user. Only match()
+        // catches that.
+        try {
+            $url = $router->assemble($routeParams, ['name' => $routeName]);
+            $probe = new Laminas\Http\PhpEnvironment\Request();
+            $probe->setUri('http://localhost' . $url);
+            $reachable = null !== $router->match($probe);
+        } catch (Throwable $e) {
+            $url = '(would not assemble)';
+            $reachable = false;
+        }
+        check("$short: $which route round-trips ($url)", $reachable);
+    }
+}
+
+echo "\n== the string catalogue matches the code ==\n";
+// build-translations.php validates the .po files against the *shipped*
+// template.pot, so it cannot notice a string the code has gained. Every
+// translatable literal must appear in the catalogue, or it renders in English
+// on an otherwise translated page.
+$pot = (string) file_get_contents($moduleDir . '/language/template.pot');
+$translatable = [];
+foreach (['/src', ''] as $dir) {
+    $files = '' === $dir
+        ? [$moduleDir . '/Module.php']
+        : iterator_to_array(new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($moduleDir . $dir)
+        ));
+    foreach ($files as $file) {
+        $path = is_string($file) ? $file : $file->getPathname();
+        if (!is_file($path) || 'php' !== pathinfo($path, PATHINFO_EXTENSION)) {
+            continue;
+        }
+        // The 'string', // @translate idiom Omeka's own extractor reads.
+        preg_match_all(
+            '/[\'"]((?:[^\'"\\\\]|\\\\.)+)[\'"]\s*;?\s*(?:\/\/|#)\s*@translate/',
+            (string) file_get_contents($path),
+            $literals
+        );
+        foreach ($literals[1] as $literal) {
+            $translatable[stripcslashes($literal)] = basename($path);
+        }
+    }
+}
+$missingStrings = [];
+foreach ($translatable as $literal => $where) {
+    if (!str_contains($pot, 'msgid "' . str_replace('"', '\"', $literal) . '"')) {
+        $missingStrings[] = "$literal ($where)";
+    }
+}
+check(
+    sprintf('all %d tagged strings are in template.pot', count($translatable)),
+    !$missingStrings,
+    implode('; ', $missingStrings)
+);
+
 echo "\n== composer dependency is declared and loadable ==\n";
 // Both of these fail silently: a missing autoload means the classes are simply
 // absent at runtime rather than erroring at boot (deliberately, so a checkout
