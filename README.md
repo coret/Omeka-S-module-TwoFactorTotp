@@ -36,10 +36,10 @@ No `Common` module, and nothing to keep in step at upgrade time. The RFC
 bundled third-party file is a QR-code renderer (MIT) used **in the browser**, so
 the shared secret is never sent to an external QR service.
 
-There is exactly one Composer package, `lbuchs/webauthn`, for the passkey work
-described under [TODO](#todo) — chosen partly because it has **no transitive
-dependencies of its own**, so it cannot drag conflicting versions of anything
-into an Omeka install. See [Dependencies](#dependencies).
+There is exactly one Composer package, `lbuchs/webauthn`, which provides the
+passkey support — chosen partly because it has **no transitive dependencies of
+its own**, so it cannot drag conflicting versions of anything into an Omeka
+install. See [Dependencies](#dependencies).
 
 The two modules **cannot run side by side** — both replace Omeka's login
 controller. Installation aborts with a clear message if TwoFactorAuth is active.
@@ -96,6 +96,10 @@ password. Passkeys are registered without requiring a discoverable credential
 (`requireResidentKey = false`) precisely because that flow is not offered.
 
 Adding passwordless login later would mean re-registering existing passkeys.
+
+Also out of scope: SMS, which is weaker than either factor offered here, and
+integration with CAS, LDAP or Single Sign-On — those systems own their own
+second factor.
 
 Why offer passkeys at all when TOTP already works: a TOTP code can be relayed
 through a proxy in real time, whereas a passkey is bound to the origin and
@@ -318,17 +322,3 @@ Point `test/e2e.php` at a throwaway account only — it enrolls, resets and logs
 in as that user.
 
 Translations are generated — see `language/README.md`.
-
-## TODO
-
-- Automate the passkey ceremony in `test/e2e.php` with a virtual authenticator
-  driven over the Chrome DevTools protocol. `curl` cannot produce a signature,
-  so registering and presenting a passkey is currently checked by hand.
-- Publish to [omeka.org/s/modules](https://omeka.org/s/modules/) and reply on
-  the forum thread.
-- Optional encryption of the stored secret, keyed from
-  `config/local.config.php`, so a database dump alone yields nothing usable.
-- Per-site (non-admin) two-factor authentication, for use with the Guest module.
-
-Out of scope: SMS (weaker than both alternatives), and integration with
-CAS / LDAP / Single Sign-On — those systems own their own second factor.
