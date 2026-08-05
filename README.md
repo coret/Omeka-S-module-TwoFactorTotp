@@ -7,7 +7,7 @@ or any other TOTP app.
 
 - **Version:** 0.2.1 — pre-release. Usable, not yet promised stable.
 - **Requires:** Omeka S ^4.0.0, PHP 8.1+ — see [Requirements](#requirements)
-- **License:** GPL-3.0 (matching Omeka S core)
+- **License:** GPL-3.0-or-later (Omeka S core is GPL-3.0)
 
 ## Why this module exists
 
@@ -322,3 +322,26 @@ Point `test/e2e.php` at a throwaway account only — it enrolls, resets and logs
 in as that user.
 
 Translations are generated — see `language/README.md`.
+
+## License
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either **version 3 of the License, or (at your option) any later
+version**.
+
+It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE. See the GNU General Public License for more details — the full text is
+in [`LICENSE`](LICENSE).
+
+GPL-3.0 matches Omeka S itself, which this module is a part of at runtime. The
+two bundled third-party components stay under their own terms, both MIT and both
+compatible with the above: [`lbuchs/webauthn`](https://github.com/lbuchs/WebAuthn)
+and the QR-code renderer in `asset/vendor/qrcode-generator/` — see
+[Dependencies](#dependencies).
+
+Note that GitHub reports this repository as "GNU General Public License v3.0".
+That is expected: the licence *text* is identical for the version-3-only and
+or-later variants, so file-based detection cannot tell them apart, and GitHub has
+no or-later identifier. The grant above is what applies.

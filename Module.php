@@ -30,7 +30,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
  * passwords (RFC 6238) from an authenticator app.
  *
  * @copyright Bob Coret, 2026
- * @license https://www.gnu.org/licenses/gpl-3.0.html GPL-3.0
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL-3.0-or-later
  */
 class Module extends AbstractModule
 {
