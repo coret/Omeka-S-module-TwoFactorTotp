@@ -43,8 +43,13 @@ $fail = 0;
 function check(string $label, bool $ok, string $detail = ''): void
 {
     global $pass, $fail;
-    if ($ok) { $pass++; echo "  ok    $label\n"; }
-    else { $fail++; echo "  FAIL  $label" . ($detail ? " — $detail" : '') . "\n"; }
+    if ($ok) {
+        $pass++;
+        echo "  ok    $label\n";
+    } else {
+        $fail++;
+        echo "  FAIL  $label" . ($detail ? " — $detail" : '') . "\n";
+    }
 }
 
 function http(string $url, ?array $post = null, bool $follow = true): array
@@ -135,7 +140,6 @@ check('held at the two-factor step', str_contains($in['url'], 'two-factor'), $in
 $wrong = http(BASE . '/two-factor', hidden($in['body']) + ['code' => '000000']);
 check('wrong code rejected', !str_contains($wrong['url'], '/admin'), $wrong['url']);
 
-
 /** Clear cookies, log in with the password, and stop at the second step. */
 function loginToSecondStep(): array
 {
@@ -147,7 +151,7 @@ function loginToSecondStep(): array
     if (str_contains($r['url'], '/login')) {
         preg_match_all('/<li[^>]*class="[^"]*(?:error|warning|success)[^"]*"[^>]*>(.*?)<\/li>/s', $r['body'], $msg);
         echo "         [login landed on /login] messages: "
-            . (implode(' | ', array_map(fn($m) => trim(strip_tags($m)), $msg[1])) ?: '(none)') . "\n";
+            . (implode(' | ', array_map(fn ($m) => trim(strip_tags($m)), $msg[1])) ?: '(none)') . "\n";
     }
     return $r;
 }

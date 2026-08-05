@@ -5,7 +5,6 @@ namespace TwoFactorTotp\Controller;
 use Doctrine\ORM\EntityManager;
 use Laminas\Authentication\AuthenticationService;
 use Laminas\Mvc\Controller\AbstractActionController;
-use Laminas\Session\Container;
 use Laminas\View\Model\ViewModel;
 use Omeka\Entity\User;
 use TwoFactorTotp\Form\OtpForm;
@@ -166,8 +165,6 @@ class OtpController extends AbstractActionController
 
     // --------------------------------------------------------------- helpers
 
-
-
     /**
      * Count a wrong code and either send the user back to try again or throw
      * the pending login away.
@@ -199,7 +196,6 @@ class OtpController extends AbstractActionController
             'otp' === $action ? [] : ['action' => $action]
         );
     }
-
 
     protected function clientIp(): string
     {

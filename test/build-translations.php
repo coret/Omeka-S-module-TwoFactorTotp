@@ -10,7 +10,6 @@
  * Usage:
  *   php test/build-translations.php        # writes .po files, then run msgfmt
  */
-
 $moduleDir = dirname(__DIR__);
 $potFile = $moduleDir . '/language/template.pot';
 

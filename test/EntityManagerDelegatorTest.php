@@ -33,7 +33,7 @@ class EntityManagerDelegatorTest extends TestCase
      */
     private function fakeEntityManager(EventManager $eventManager): object
     {
-        return new class ($eventManager) {
+        return new class($eventManager) {
             public function __construct(private EventManager $eventManager)
             {
             }

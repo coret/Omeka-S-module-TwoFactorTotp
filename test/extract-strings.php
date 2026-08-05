@@ -11,7 +11,6 @@
  * Usage: php test/extract-strings.php [dir|file ...] > strings.pot
  *        (defaults to view/ and src/)
  */
-
 $moduleDir = dirname(__DIR__);
 $targets = array_slice($argv, 1) ?: [$moduleDir . '/view', $moduleDir . '/src'];
 

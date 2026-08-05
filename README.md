@@ -280,6 +280,15 @@ raising the tolerance setting.
 Three layers, cheapest first. The crypto is the easy part to get right; the
 wiring is where the bugs live, so the last two matter more than they look.
 
+Code style is [Omeka S's own](https://omeka.org/s/docs/developer/contributing/):
+PSR-2 plus their extras. `.php-cs-fixer.dist.php` is Omeka's `.php_cs_module`
+copied verbatim, so it stays in step with upstream — including that it defines
+no `->in()`, which is why the path is given on the command line:
+
+```sh
+php-cs-fixer fix .            # or --dry-run --diff to see what it would change
+```
+
 ```sh
 # 0. Dependencies (once). vendor/ is not committed.
 composer install --no-dev

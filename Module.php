@@ -371,7 +371,6 @@ class Module extends AbstractModule
         );
     }
 
-
     // ---------------------------------------------------------- MVC listener
 
     /**

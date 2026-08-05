@@ -26,7 +26,7 @@ class SecondFactorRegistryTest extends TestCase
 
     private function factor(string $name, bool $enrolled): SecondFactorInterface
     {
-        return new class ($name, $enrolled) implements SecondFactorInterface {
+        return new class($name, $enrolled) implements SecondFactorInterface {
             public function __construct(private string $name, private bool $enrolled)
             {
             }

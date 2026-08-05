@@ -52,12 +52,12 @@ class TotpTest extends TestCase
     public static function base32Vectors(): array
     {
         return [
-            'empty'  => ['', ''],
-            'f'      => ['f', 'MY'],
-            'fo'     => ['fo', 'MZXQ'],
-            'foo'    => ['foo', 'MZXW6'],
-            'foob'   => ['foob', 'MZXW6YQ'],
-            'fooba'  => ['fooba', 'MZXW6YTB'],
+            'empty' => ['', ''],
+            'f' => ['f', 'MY'],
+            'fo' => ['fo', 'MZXQ'],
+            'foo' => ['foo', 'MZXW6'],
+            'foob' => ['foob', 'MZXW6YQ'],
+            'fooba' => ['fooba', 'MZXW6YTB'],
             'foobar' => ['foobar', 'MZXW6YTBOI'],
         ];
     }
