@@ -2,6 +2,10 @@
 # See "Installation" in README.md: composer install --no-dev
 /vendor/
 
+# Release tooling and its output, deliberately not published.
+/release.sh
+/dist/
+
 # PHP-CS-Fixer. The docs name .php_cs.cache; v3 writes the other one.
 /.php-cs-fixer.cache
 /.php_cs.cache
