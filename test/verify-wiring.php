@@ -38,7 +38,15 @@ function check(string $label, bool $ok, string $detail = ''): void
 echo "\n== module.ini ==\n";
 $ini = parse_ini_file($moduleDir . '/config/module.ini', true)['info'];
 check('name is TwoFactorTotp', 'TwoFactorTotp' === $ini['name'], $ini['name']);
-check('version is 0.2', '0.2' === $ini['version'], $ini['version']);
+// Deliberately not pinned to a literal: that needs editing every release,
+// which is the kind of friction that gets a check deleted rather than updated.
+// What matters is that the version is present and well formed, since the
+// release script derives the tag and the zip name from it.
+check(
+    "version \"{$ini['version']}\" is well formed",
+    (bool) preg_match('/^\d+\.\d+(\.\d+)?$/', (string) $ini['version']),
+    $ini['version']
+);
 check(
     'omeka_version_constraint satisfied by 4.2.0',
     Composer\Semver\Semver::satisfies('4.2.0', $ini['omeka_version_constraint'])

@@ -5,7 +5,7 @@ Two-factor authentication for Omeka S using **time-based one-time passwords**
 authenticator app — Google Authenticator, Aegis, FreeOTP, 1Password, Bitwarden
 or any other TOTP app.
 
-- **Version:** 0.2 — pre-release. Usable, not yet promised stable.
+- **Version:** 0.2.1 — pre-release. Usable, not yet promised stable.
 - **Requires:** Omeka S ^4.0.0, PHP 8.1+ — see [Requirements](#requirements)
 - **License:** GPL-3.0 (matching Omeka S core)
 
