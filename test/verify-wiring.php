@@ -352,6 +352,38 @@ foreach ($controllerFiles as $controllerFile) {
     }
 }
 
+echo "\n== composer dependency is declared and loadable ==\n";
+// Both of these fail silently: a missing autoload means the classes are simply
+// absent at runtime rather than erroring at boot (deliberately, so a checkout
+// without vendor/ still lets people log in).
+$composerFile = $moduleDir . '/composer.json';
+check('composer.json exists', is_readable($composerFile));
+$composer = json_decode((string) file_get_contents($composerFile), true) ?: [];
+check(
+    'composer.json requires lbuchs/webauthn',
+    isset($composer['require']['lbuchs/webauthn']),
+    implode(', ', array_keys($composer['require'] ?? []))
+);
+$moduleSource = (string) file_get_contents($moduleDir . '/Module.php');
+check(
+    'Module.php loads the composer autoloader',
+    (bool) preg_match('/require_once\s+__DIR__\s*\.\s*[\'"]\/vendor\/autoload\.php[\'"]/', $moduleSource)
+);
+check(
+    'the autoloader is guarded, so a missing vendor/ cannot fatal the login',
+    (bool) preg_match('/file_exists\(\s*__DIR__\s*\.\s*[\'"]\/vendor\/autoload\.php[\'"]\s*\)/', $moduleSource)
+);
+// upgrade() runs on a bare module object, where init() never fires.
+$beforeClass = substr($moduleSource, 0, strpos($moduleSource, 'class Module') ?: 0);
+check(
+    'the autoloader is at file scope, not inside a method',
+    str_contains($beforeClass, 'vendor/autoload.php')
+);
+check(
+    'vendor/ is not committed',
+    str_contains((string) file_get_contents($moduleDir . '/.gitignore'), '/vendor/')
+);
+
 echo "\n== assets referenced by views exist ==\n";
 foreach (['vendor/qrcode-generator/qrcode.js', 'js/totp-setup.js'] as $asset) {
     check("asset $asset", is_readable($moduleDir . '/asset/' . $asset));

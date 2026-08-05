@@ -1,3 +1,7 @@
+# Composer dependencies are installed on deploy, never committed.
+# See "Installation" in README.md: composer install --no-dev
+/vendor/
+
 # PHPUnit
 /.phpunit.result.cache
 

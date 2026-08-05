@@ -12,6 +12,19 @@ use Omeka\Permissions\Acl;
 use TwoFactorTotp\Form\ConfigForm;
 use TwoFactorTotp\Service\TotpManager;
 
+// Omeka core never loads a module's Composer autoloader, so the module must do
+// it itself. Two deliberate details:
+//
+//   - Guarded, because `vendor/` is not committed (it is installed on deploy).
+//     A checkout without it must still boot: this module replaces the login
+//     controller, so a fatal here locks everybody out of the site.
+//   - At file scope rather than in init(), because Omeka instantiates a bare
+//     module object to run upgrade() on a module that is not loaded
+//     (Omeka\Module\Manager::getModuleObject()), and init() never fires on it.
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+    require_once __DIR__ . '/vendor/autoload.php';
+}
+
 /**
  * TwoFactorTotp — second-factor authentication with time-based one-time
  * passwords (RFC 6238) from an authenticator app.

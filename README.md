@@ -29,12 +29,17 @@ and mailbox compromise is exactly the scenario two-factor authentication is
 supposed to survive. A TOTP secret lives on the phone, never travels, and works
 with no mail server and no connectivity at all.
 
-**2. No dependencies.**
-No `Common` module, no Composer packages, nothing to keep in step at upgrade
-time. The RFC 4226/6238 implementation is ~200 lines of `hash_hmac` and base32
-in `src/Service/Totp.php`, pinned to the published RFC test vectors. The only
+**2. Almost no dependencies.**
+No `Common` module, and nothing to keep in step at upgrade time. The RFC
+4226/6238 implementation is ~200 lines of `hash_hmac` and base32 in
+`src/Service/Totp.php`, pinned to the published RFC test vectors. The only
 bundled third-party file is a QR-code renderer (MIT) used **in the browser**, so
 the shared secret is never sent to an external QR service.
+
+There is exactly one Composer package, `lbuchs/webauthn`, for the passkey work
+described under [TODO](#todo) — chosen partly because it has **no transitive
+dependencies of its own**, so it cannot drag conflicting versions of anything
+into an Omeka install. See [Dependencies](#dependencies).
 
 The two modules **cannot run side by side** — both replace Omeka's login
 controller. Installation aborts with a clear message if TwoFactorAuth is active.
@@ -84,7 +89,8 @@ Other things worth knowing:
 |---|---|
 | **Omeka S** | `^4.0.0` (enforced by `module.ini`). Verified against 4.2.1. |
 | **PHP** | 8.1 or newer. Verified on 8.4 and 8.5. |
-| **PHP extensions** | `hash`, `json`, `mbstring`. |
+| **PHP extensions** | `hash`, `json`, `mbstring`, `openssl`. |
+| **Composer** | One package; run `composer install --no-dev` (see [Dependencies](#dependencies)). |
 | **Database** | MySQL 5.7+ / MariaDB 10.2+ — recovery codes live in a `json` column. |
 | **Server clock** | Synchronised (NTP). TOTP is time-based; see the note below. |
 | **Sessions & cookies** | Used for the pending login between the two steps and for trusted devices. |
@@ -92,17 +98,47 @@ Other things worth knowing:
 `hash` and `json` are compiled in on any normal PHP build; **`mbstring` is the one
 worth checking**, as it is genuinely optional in some distributions. Omeka S
 already requires all three, so a working Omeka is a working environment for this.
+`openssl` is needed only by the passkey work and is present on essentially every
+PHP install.
+
+Passkeys, once they land, will additionally require the site to be served over
+**HTTPS** — WebAuthn refuses to run on plain HTTP (bar `localhost`). TOTP has no
+such requirement.
 
 JavaScript is used only to draw the QR code. Without it the setup page still
 works — it shows the secret as text for manual entry.
 
 ## Dependencies
 
-**None to install.** No Composer packages and no `Common` module, so there is
-nothing to keep in step at upgrade time.
+**One Composer package**, and no `Common` module.
+
+| Package | Version | Licence | Why |
+|---|---|---|---|
+| [`lbuchs/webauthn`](https://github.com/lbuchs/WebAuthn) | `^2.2` | MIT | WebAuthn/passkey support. **Not yet used** — see [TODO](#todo). |
+
+It was picked over the more widely known `web-auth/webauthn-lib` specifically
+because it has **zero transitive dependencies**. That matters more than it
+sounds: Omeka loads a module's Composer autoloader *prepended*, so any package a
+module bundles shadows Omeka's own copy for the whole application. The
+alternative allows `psr/log ^1|^2|^3` and would therefore install 3.x, whose
+`LoggerInterface` is typed, over the untyped 1.x that Omeka S 4.2 ships and its
+`PsrLoggerAdapter` is built against — breaking logging site-wide.
+
+Install it with:
+
+```sh
+composer install --no-dev
+```
+
+`vendor/` is deliberately **not** committed. The module is written to boot
+without it: the autoloader is loaded only `if (file_exists(...))`, because this
+module replaces the login controller and a fatal there would lock everyone out.
+Until `composer install` has run, passkey features are simply unavailable —
+TOTP, recovery codes and login are unaffected.
 
 The RFC 4226/6238 implementation is about 200 lines of `hash_hmac` and base32 in
-`src/Service/Totp.php`, pinned to the published RFC test vectors.
+`src/Service/Totp.php`, pinned to the published RFC test vectors, and needs
+nothing from Composer.
 
 *Bundled* third-party code — one file, already included, nothing to fetch:
 
@@ -126,7 +162,9 @@ it first.
 
 ## Installation
 
-1. Copy the `TwoFactorTotp` directory into `modules/`.
+1. Copy the `TwoFactorTotp` directory into `modules/`. If you are installing from
+   a git checkout rather than a release zip, run `composer install --no-dev`
+   inside it — `vendor/` is not committed.
 2. Install it from **Admin → Modules**. This creates the two tables it needs
    (`two_factor_totp_enrollment`, `two_factor_totp_trusted_device`) and writes
    the default settings. Uninstalling drops both tables and removes the settings.
@@ -191,6 +229,9 @@ Three layers, cheapest first. The crypto is the easy part to get right; the
 wiring is where the bugs live, so the last two matter more than they look.
 
 ```sh
+# 0. Dependencies (once). vendor/ is not committed.
+composer install --no-dev
+
 # 1. Unit — RFC 4226 / RFC 6238 vectors, plus service-wiring regressions.
 #    OMEKA_VENDOR is only needed when the module is not sitting in modules/;
 #    the wiring tests skip themselves without it.
@@ -219,12 +260,17 @@ Translations are generated — see `language/README.md`.
 
 ## TODO
 
-- **WebAuthn / passkeys** as an alternative second factor (hardware keys,
-  Touch ID / Face ID, Windows Hello). Phishing-resistant in a way TOTP is not:
-  a TOTP code can still be relayed through a proxy in real time, whereas a
-  passkey is bound to the origin. Intended as an *additional* factor type
-  alongside TOTP, not a replacement — TOTP needs no special hardware and works
-  on any phone.
+- **WebAuthn / passkeys** as a second factor (hardware keys, Touch ID / Face ID,
+  Windows Hello) — **in progress on the `passkeys` branch.** Phishing-resistant
+  in a way TOTP is not: a TOTP code can still be relayed through a proxy in real
+  time, whereas a passkey is bound to the origin. An *additional* factor type
+  alongside TOTP, not a replacement — TOTP needs no special hardware and works on
+  any phone.
+
+  So far only the dependency is in place (`lbuchs/webauthn`); **nothing in the
+  interface uses it yet**. Still to come: credential storage, moving recovery
+  codes to the user so a passkey-only account still has a way back in, the
+  login and enrollment flows, and the browser-side ceremony.
 - Publish to [omeka.org/s/modules](https://omeka.org/s/modules/) and reply on
   the forum thread.
 - Optional encryption of the stored secret, keyed from

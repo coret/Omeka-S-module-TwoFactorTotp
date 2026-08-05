@@ -1,0 +1,25 @@
+{
+    "name": "coret/two-factor-totp",
+    "description": "Two-factor authentication for Omeka S using time-based one-time passwords (TOTP, RFC 6238) from an authenticator app.",
+    "type": "omeka-s-module",
+    "license": "GPL-3.0-or-later",
+    "homepage": "https://github.com/coret/TwoFactorTotp",
+    "authors": [
+        {
+            "name": "Bob Coret",
+            "homepage": "https://www.coret.org"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "ext-hash": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-openssl": "*",
+        "lbuchs/webauthn": "^2.2"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}
