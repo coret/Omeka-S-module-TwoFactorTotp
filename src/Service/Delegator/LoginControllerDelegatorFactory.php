@@ -6,6 +6,7 @@ use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\DelegatorFactoryInterface;
 use Omeka\Controller\LoginController as CoreLoginController;
 use TwoFactorTotp\Controller\LoginController;
+use TwoFactorTotp\Service\SecondFactorRegistry;
 use TwoFactorTotp\Service\TrustedDeviceManager;
 use TwoFactorTotp\Stdlib\PendingLogin;
 
@@ -48,7 +49,8 @@ class LoginControllerDelegatorFactory implements DelegatorFactoryInterface
             $services->get('Omeka\EntityManager'),
             $services->get('Omeka\AuthenticationService'),
             $services->get(TrustedDeviceManager::class),
-            $services->get(PendingLogin::class)
+            $services->get(PendingLogin::class),
+            $services->get(SecondFactorRegistry::class)
         );
     }
 }

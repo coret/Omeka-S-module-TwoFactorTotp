@@ -9,6 +9,7 @@ use Laminas\View\Model\ViewModel;
 use Omeka\Controller\LoginController as CoreLoginController;
 use Omeka\Form\LoginForm;
 use TwoFactorTotp\Authentication\Adapter\SecondFactorAdapter;
+use TwoFactorTotp\Service\SecondFactorRegistry;
 use TwoFactorTotp\Service\TrustedDeviceManager;
 use TwoFactorTotp\Stdlib\PendingLogin;
 
@@ -27,15 +28,19 @@ class LoginController extends CoreLoginController
 
     protected PendingLogin $pendingLogin;
 
+    protected SecondFactorRegistry $registry;
+
     public function __construct(
         EntityManager $entityManager,
         AuthenticationService $auth,
         TrustedDeviceManager $trustedDevices,
-        PendingLogin $pendingLogin
+        PendingLogin $pendingLogin,
+        SecondFactorRegistry $registry
     ) {
         parent::__construct($entityManager, $auth);
         $this->trustedDevices = $trustedDevices;
         $this->pendingLogin = $pendingLogin;
+        $this->registry = $registry;
     }
 
     /**
@@ -100,7 +105,13 @@ class LoginController extends CoreLoginController
                             (int) $pendingUser->getId(),
                             $session->offsetGet('redirect_url')
                         );
-                        return $this->redirect()->toRoute('two-factor');
+                        // Where step two lives depends on what the user has
+                        // enrolled. Hard-coding the code screen sent somebody
+                        // whose only factor is a passkey to a form with no code
+                        // to type: locked out but for a recovery code.
+                        $route = $this->registry->getChallengeRouteFor($pendingUser)
+                            ?? ['two-factor', []];
+                        return $this->redirect()->toRoute($route[0], $route[1]);
                     }
                 }
 
