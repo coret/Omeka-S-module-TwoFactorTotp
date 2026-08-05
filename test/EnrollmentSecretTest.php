@@ -8,6 +8,7 @@ use Omeka\Entity\User;
 use Omeka\Settings\Settings;
 use PHPUnit\Framework\TestCase;
 use TwoFactorTotp\Entity\TotpEnrollment;
+use TwoFactorTotp\Service\RecoveryCodeManager;
 use TwoFactorTotp\Service\Totp;
 use TwoFactorTotp\Service\TotpManager;
 use TwoFactorTotp\Service\TrustedDeviceManager;
@@ -51,7 +52,8 @@ class EnrollmentSecretTest extends TestCase
             $entityManager,
             new Totp(),
             $this->createMock(Settings::class),
-            $this->createMock(TrustedDeviceManager::class)
+            $this->createMock(TrustedDeviceManager::class),
+            $this->createMock(RecoveryCodeManager::class)
         );
     }
 

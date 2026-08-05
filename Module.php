@@ -107,6 +107,9 @@ class Module extends AbstractModule
             ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
             SQL);
 
+        $connection->executeStatement(self::SQL_CREATE_RECOVERY_CODE);
+        $connection->executeStatement(self::SQL_CREATE_WEBAUTHN_CREDENTIAL);
+
         // ON DELETE CASCADE: deleting a user must not leave their secret or
         // their trusted devices behind.
         $connection->executeStatement(
@@ -119,13 +122,173 @@ class Module extends AbstractModule
              ADD CONSTRAINT FK_two_factor_totp_device_user
              FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE'
         );
+        foreach (self::USER_FOREIGN_KEYS as $constraint => $table) {
+            $connection->executeStatement(sprintf(
+                'ALTER TABLE %s ADD CONSTRAINT %s
+                 FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE',
+                $table,
+                $constraint
+            ));
+        }
 
         $this->writeDefaultSettings($serviceLocator);
+    }
+
+    /**
+     * Recovery codes belong to the user, so that an account whose only factor
+     * is not TOTP still has a way back in.
+     */
+    const SQL_CREATE_RECOVERY_CODE = <<<'SQL'
+        CREATE TABLE IF NOT EXISTS two_factor_totp_recovery_code (
+            id INT AUTO_INCREMENT NOT NULL,
+            user_id INT NOT NULL,
+            code_hash VARCHAR(255) NOT NULL,
+            created DATETIME NOT NULL,
+            used_at DATETIME DEFAULT NULL,
+            INDEX idx_two_factor_totp_recovery_user (user_id),
+            PRIMARY KEY(id)
+        ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL;
+
+    /**
+     * Many per user: a phone, a laptop, a hardware key.
+     *
+     * credential_id is ascii_bin so matching stays byte-exact — base64url is
+     * case-significant, and a case-insensitive comparison here would let one
+     * credential stand in for another.
+     */
+    const SQL_CREATE_WEBAUTHN_CREDENTIAL = <<<'SQL'
+        CREATE TABLE IF NOT EXISTS two_factor_totp_webauthn_credential (
+            id INT AUTO_INCREMENT NOT NULL,
+            user_id INT NOT NULL,
+            credential_id VARCHAR(255) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+            public_key TEXT NOT NULL,
+            sign_count BIGINT UNSIGNED DEFAULT 0 NOT NULL,
+            label VARCHAR(255) DEFAULT NULL,
+            transports VARCHAR(100) DEFAULT NULL,
+            aaguid VARCHAR(64) DEFAULT NULL,
+            created DATETIME NOT NULL,
+            last_used_at DATETIME DEFAULT NULL,
+            UNIQUE INDEX UNIQ_two_factor_totp_webauthn_credential (credential_id),
+            INDEX idx_two_factor_totp_webauthn_user (user_id),
+            PRIMARY KEY(id)
+        ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL;
+
+    /** Constraint name => table, for the tables added in 0.2. */
+    const USER_FOREIGN_KEYS = [
+        'FK_two_factor_totp_recovery_user' => 'two_factor_totp_recovery_code',
+        'FK_two_factor_totp_webauthn_user' => 'two_factor_totp_webauthn_credential',
+    ];
+
+    /**
+     * Every statement here is safe to run twice.
+     *
+     * Deliberate, not incidental: raising the version in module.ini puts the
+     * module into `needs_upgrade`, and Omeka loads only *active* modules — so
+     * between the bump and an administrator running the upgrade, this module's
+     * config is not loaded at all and two-factor authentication is off site
+     * wide. The way to keep that window near zero is to apply the migration by
+     * hand first and then let Omeka run it again over the top.
+     */
+    public function upgrade($oldVersion, $newVersion, \Laminas\ServiceManager\ServiceLocatorInterface $serviceLocator)
+    {
+        $connection = $serviceLocator->get('Omeka\Connection');
+
+        if (version_compare((string) $oldVersion, '0.2', '<')) {
+            $connection->executeStatement(self::SQL_CREATE_RECOVERY_CODE);
+            $connection->executeStatement(self::SQL_CREATE_WEBAUTHN_CREDENTIAL);
+
+            // ALTER TABLE ... ADD CONSTRAINT has no IF NOT EXISTS, so ask first.
+            foreach (self::USER_FOREIGN_KEYS as $constraint => $table) {
+                $exists = (int) $connection->fetchOne(
+                    'SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+                      WHERE CONSTRAINT_SCHEMA = DATABASE()
+                        AND TABLE_NAME = ?
+                        AND CONSTRAINT_NAME = ?',
+                    [$table, $constraint]
+                );
+                if (!$exists) {
+                    $connection->executeStatement(sprintf(
+                        'ALTER TABLE %s ADD CONSTRAINT %s
+                         FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE',
+                        $table,
+                        $constraint
+                    ));
+                }
+            }
+
+            $this->migrateRecoveryCodes($connection);
+
+            // The legacy column stays, still holding the old hashes: it makes
+            // rolling back to 0.1 a plain `git checkout` with no data loss, and
+            // it costs nothing to keep. A later version drops it, once 0.2 has
+            // proven itself.
+            //
+            // It must become nullable though — it is NOT NULL today and nothing
+            // writes it any more, so the next enrollment would otherwise fail.
+            //
+            // The NULL keyword is spelled out on purpose: on MariaDB (12.0
+            // tested) `MODIFY ... JSON DEFAULT NULL` alone leaves the column
+            // NOT NULL and reports success, so the change silently does
+            // nothing.
+            $connection->executeStatement(
+                'ALTER TABLE two_factor_totp_enrollment MODIFY recovery_codes JSON NULL DEFAULT NULL'
+            );
+        }
+    }
+
+    /**
+     * Copy recovery codes off the enrollment row onto the user.
+     *
+     * Only for users who have none yet, so running this twice cannot double
+     * anybody's set. The hashes move verbatim — they are password_hash() output
+     * and stay valid, so codes people have already written down keep working.
+     * That matters: for an account that has lost its phone, these are the only
+     * way back in.
+     *
+     * @return int Number of codes moved.
+     */
+    protected function migrateRecoveryCodes(\Doctrine\DBAL\Connection $connection): int
+    {
+        $rows = $connection->fetchAllAssociative(
+            'SELECT e.user_id, e.recovery_codes, e.confirmed_at
+               FROM two_factor_totp_enrollment e
+              WHERE e.recovery_codes IS NOT NULL
+                AND NOT EXISTS (
+                    SELECT 1 FROM two_factor_totp_recovery_code r
+                     WHERE r.user_id = e.user_id
+                )'
+        );
+
+        $migrated = 0;
+        foreach ($rows as $row) {
+            $hashes = json_decode((string) $row['recovery_codes'], true);
+            if (!is_array($hashes)) {
+                continue;
+            }
+            $created = $row['confirmed_at'] ?: date('Y-m-d H:i:s');
+            foreach ($hashes as $hash) {
+                if (!is_string($hash) || '' === $hash) {
+                    continue;
+                }
+                $connection->executeStatement(
+                    'INSERT INTO two_factor_totp_recovery_code (user_id, code_hash, created)
+                     VALUES (?, ?, ?)',
+                    [(int) $row['user_id'], $hash, $created]
+                );
+                $migrated++;
+            }
+        }
+
+        return $migrated;
     }
 
     public function uninstall(\Laminas\ServiceManager\ServiceLocatorInterface $serviceLocator)
     {
         $connection = $serviceLocator->get('Omeka\Connection');
+        $connection->executeStatement('DROP TABLE IF EXISTS two_factor_totp_webauthn_credential');
+        $connection->executeStatement('DROP TABLE IF EXISTS two_factor_totp_recovery_code');
         $connection->executeStatement('DROP TABLE IF EXISTS two_factor_totp_trusted_device');
         $connection->executeStatement('DROP TABLE IF EXISTS two_factor_totp_enrollment');
 

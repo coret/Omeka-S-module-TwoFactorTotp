@@ -17,15 +17,14 @@ use TwoFactorTotp\Entity\TotpEnrollment;
  */
 class TotpManager
 {
-    const RECOVERY_CODE_COUNT = 10;
+    /**
+     * Recovery codes moved to RecoveryCodeManager when they stopped belonging
+     * to the TOTP enrollment. Kept as aliases so callers and templates that
+     * already reference them keep working.
+     */
+    const RECOVERY_CODE_COUNT = RecoveryCodeManager::CODE_COUNT;
 
-    /** Characters used in recovery codes: base32 minus nothing, so no 0/1/8 to misread. */
-    const RECOVERY_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-
-    const RECOVERY_CODE_LENGTH = 10;
-
-    /** Below this, nag the user to regenerate. */
-    const RECOVERY_LOW_WATER_MARK = 2;
+    const RECOVERY_LOW_WATER_MARK = RecoveryCodeManager::LOW_WATER_MARK;
 
     protected EntityManager $entityManager;
 
@@ -35,16 +34,20 @@ class TotpManager
 
     protected TrustedDeviceManager $trustedDevices;
 
+    protected RecoveryCodeManager $recoveryCodes;
+
     public function __construct(
         EntityManager $entityManager,
         Totp $totp,
         Settings $settings,
-        TrustedDeviceManager $trustedDevices
+        TrustedDeviceManager $trustedDevices,
+        RecoveryCodeManager $recoveryCodes
     ) {
         $this->entityManager = $entityManager;
         $this->totp = $totp;
         $this->settings = $settings;
         $this->trustedDevices = $trustedDevices;
+        $this->recoveryCodes = $recoveryCodes;
     }
 
     // --------------------------------------------------------------- queries
@@ -189,18 +192,15 @@ class TotpManager
             return null;
         }
 
-        $plainCodes = $this->generateRecoveryCodes();
-
         $enrollment
             ->setIsConfirmed(true)
             ->setLastCounter($counter)
             ->setConfirmedAt(new DateTime('now'))
-            ->setLastUsedAt(new DateTime('now'))
-            ->setRecoveryCodes($this->hashRecoveryCodes($plainCodes));
+            ->setLastUsedAt(new DateTime('now'));
 
         $this->entityManager->flush();
 
-        return $plainCodes;
+        return $this->recoveryCodes->generate($user);
     }
 
     /**
@@ -214,6 +214,11 @@ class TotpManager
             $this->entityManager->remove($enrollment);
         }
         $this->trustedDevices->revokeAll($user);
+        // Recovery codes belong to the user, not the enrollment, so removing
+        // them is now an explicit step. TOTP is presently the only factor, so
+        // losing it leaves nothing for the codes to recover *into*. Once other
+        // factors exist this must only fire when the last one goes.
+        $this->recoveryCodes->deleteAll($user);
         $this->entityManager->flush();
     }
 
@@ -258,31 +263,13 @@ class TotpManager
     /**
      * Spend one recovery code. Each works exactly once.
      */
+    /**
+     * Spend a recovery code. Delegated: the codes are the user's, not this
+     * factor's, but the call sites predate that and the signature is kept.
+     */
     public function consumeRecoveryCode(User $user, string $code): bool
     {
-        $enrollment = $this->findEnrollment($user);
-        if (!$enrollment || !$enrollment->isConfirmed()) {
-            return false;
-        }
-
-        $candidate = $this->normalizeRecoveryCode($code);
-        if ('' === $candidate) {
-            return false;
-        }
-
-        $hashes = $enrollment->getRecoveryCodes();
-        foreach ($hashes as $index => $hash) {
-            if (password_verify($candidate, (string) $hash)) {
-                unset($hashes[$index]);
-                $enrollment
-                    ->setRecoveryCodes($hashes)
-                    ->setLastUsedAt(new DateTime('now'));
-                $this->entityManager->flush();
-                return true;
-            }
-        }
-
-        return false;
+        return $this->recoveryCodes->consume($user, $code);
     }
 
     /**
@@ -292,58 +279,11 @@ class TotpManager
      */
     public function regenerateRecoveryCodes(User $user): array
     {
-        $enrollment = $this->findEnrollment($user);
-        if (!$enrollment) {
-            return [];
-        }
-
-        $plainCodes = $this->generateRecoveryCodes();
-        $enrollment->setRecoveryCodes($this->hashRecoveryCodes($plainCodes));
-        $this->entityManager->flush();
-
-        return $plainCodes;
+        return $this->recoveryCodes->generate($user);
     }
 
     public function countRecoveryCodes(User $user): int
     {
-        $enrollment = $this->findEnrollment($user);
-        return $enrollment ? $enrollment->countRecoveryCodes() : 0;
-    }
-
-    /**
-     * @return string[]
-     */
-    protected function generateRecoveryCodes(): array
-    {
-        $codes = [];
-        $alphabetMax = strlen(self::RECOVERY_ALPHABET) - 1;
-        for ($i = 0; $i < self::RECOVERY_CODE_COUNT; $i++) {
-            $code = '';
-            for ($j = 0; $j < self::RECOVERY_CODE_LENGTH; $j++) {
-                $code .= self::RECOVERY_ALPHABET[random_int(0, $alphabetMax)];
-            }
-            // Grouped for legibility; the groups are stripped on input.
-            $codes[] = substr($code, 0, 5) . '-' . substr($code, 5);
-        }
-        return $codes;
-    }
-
-    /**
-     * @param string[] $plainCodes
-     * @return string[]
-     */
-    protected function hashRecoveryCodes(array $plainCodes): array
-    {
-        return array_map(function (string $code): string {
-            return password_hash($this->normalizeRecoveryCode($code), PASSWORD_DEFAULT);
-        }, $plainCodes);
-    }
-
-    /**
-     * Strip the cosmetic grouping so "a3f7k-9qm2x" and "A3F7K9QM2X" match.
-     */
-    protected function normalizeRecoveryCode(string $code): string
-    {
-        return strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $code));
+        return $this->recoveryCodes->countUnused($user);
     }
 }

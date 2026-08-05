@@ -5,7 +5,7 @@ Two-factor authentication for Omeka S using **time-based one-time passwords**
 authenticator app — Google Authenticator, Aegis, FreeOTP, 1Password, Bitwarden
 or any other TOTP app.
 
-- **Version:** 0.1 — pre-release. Usable, not yet promised stable.
+- **Version:** 0.2 — pre-release. Usable, not yet promised stable.
 - **Requires:** Omeka S ^4.0.0, PHP 8.1+ — see [Requirements](#requirements)
 - **License:** GPL-3.0 (matching Omeka S core)
 
@@ -165,9 +165,15 @@ it first.
 1. Copy the `TwoFactorTotp` directory into `modules/`. If you are installing from
    a git checkout rather than a release zip, run `composer install --no-dev`
    inside it — `vendor/` is not committed.
-2. Install it from **Admin → Modules**. This creates the two tables it needs
-   (`two_factor_totp_enrollment`, `two_factor_totp_trusted_device`) and writes
-   the default settings. Uninstalling drops both tables and removes the settings.
+2. Install it from **Admin → Modules**. This creates the four tables it needs —
+   `two_factor_totp_enrollment`, `two_factor_totp_trusted_device`,
+   `two_factor_totp_recovery_code` and `two_factor_totp_webauthn_credential` —
+   and writes the default settings. Uninstalling drops all four and removes the
+   settings.
+
+   Upgrading from 0.1 adds the last two and moves existing recovery codes into
+   `two_factor_totp_recovery_code`. The codes themselves do not change, so any
+   you have already written down keep working.
 3. Optionally configure it (**Modules → TwoFactorTotp → Configure**).
 4. Each user enables it for themselves from their own user page.
 
@@ -195,9 +201,14 @@ In order of preference:
    ```sql
    DELETE FROM two_factor_totp_enrollment
     WHERE user_id = (SELECT id FROM user WHERE email = 'you@example.org');
+   DELETE FROM two_factor_totp_webauthn_credential
+    WHERE user_id = (SELECT id FROM user WHERE email = 'you@example.org');
    ```
 
-   That account then logs in with its password alone.
+   That account then logs in with its password alone. Removing every factor is
+   what matters; leftover rows in `two_factor_totp_recovery_code` are harmless,
+   since a recovery code is only ever offered when a second factor is owed, and
+   enrolling again replaces the whole set.
 
 4. **Turn the whole module off from the database.** The nuclear option, for the
    case where the module itself is what is broken — it replaces the login
@@ -267,10 +278,12 @@ Translations are generated — see `language/README.md`.
   alongside TOTP, not a replacement — TOTP needs no special hardware and works on
   any phone.
 
-  So far only the dependency is in place (`lbuchs/webauthn`); **nothing in the
-  interface uses it yet**. Still to come: credential storage, moving recovery
-  codes to the user so a passkey-only account still has a way back in, the
-  login and enrollment flows, and the browser-side ceremony.
+  Done so far: the dependency (`lbuchs/webauthn`), the credential table, and
+  recovery codes moved off the TOTP enrollment onto the user — so an account
+  whose only factor is a passkey will still have a way back in. **Nothing in
+  the interface uses any of it yet.** Still to come: the factor abstraction so
+  the login step stops assuming TOTP, the login and enrollment flows, and the
+  browser-side ceremony.
 - Publish to [omeka.org/s/modules](https://omeka.org/s/modules/) and reply on
   the forum thread.
 - Optional encryption of the stored secret, keyed from

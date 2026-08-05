@@ -19,6 +19,7 @@ return [
     'service_manager' => [
         'factories' => [
             Service\Totp::class => InvokableFactory::class,
+            Service\RecoveryCodeManager::class => Service\Factory\RecoveryCodeManagerFactory::class,
             Service\TotpManager::class => Service\Factory\TotpManagerFactory::class,
             Service\TrustedDeviceManager::class => Service\Factory\TrustedDeviceManagerFactory::class,
             Stdlib\PendingLogin::class => Service\Factory\PendingLoginFactory::class,

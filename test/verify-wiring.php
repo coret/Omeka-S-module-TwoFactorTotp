@@ -38,7 +38,7 @@ function check(string $label, bool $ok, string $detail = ''): void
 echo "\n== module.ini ==\n";
 $ini = parse_ini_file($moduleDir . '/config/module.ini', true)['info'];
 check('name is TwoFactorTotp', 'TwoFactorTotp' === $ini['name'], $ini['name']);
-check('version is 0.1', '0.1' === $ini['version'], $ini['version']);
+check('version is 0.2', '0.2' === $ini['version'], $ini['version']);
 check(
     'omeka_version_constraint satisfied by 4.2.0',
     Composer\Semver\Semver::satisfies('4.2.0', $ini['omeka_version_constraint'])
@@ -115,9 +115,27 @@ $emSetup = Doctrine\ORM\Tools\Setup::createAnnotationMetadataConfiguration(
     sys_get_temp_dir(),
     new Doctrine\Common\Cache\ArrayCache()
 );
+// Omeka maps camelCase fields to snake_case columns; without the same strategy
+// the metadata below reports field names and every column check misfires.
+$emSetup->setNamingStrategy(
+    new Doctrine\ORM\Mapping\UnderscoreNamingStrategy(CASE_LOWER)
+);
 $driver = $emSetup->getMetadataDriverImpl();
 $found = $driver->getAllClassNames();
-check('both entities discovered', 2 === count($found), implode(', ', $found));
+$expectedEntities = [
+    TwoFactorTotp\Entity\TotpEnrollment::class,
+    TwoFactorTotp\Entity\TrustedDevice::class,
+    TwoFactorTotp\Entity\RecoveryCode::class,
+    TwoFactorTotp\Entity\WebAuthnCredential::class,
+];
+sort($expectedEntities);
+$foundSorted = $found;
+sort($foundSorted);
+check(
+    'every entity is discovered',
+    $expectedEntities === $foundSorted,
+    'found: ' . implode(', ', $foundSorted)
+);
 
 foreach ($found as $entityClass) {
     try {
@@ -147,6 +165,60 @@ check(
     'last_counter is bigint and nullable',
     'bigint' === ($enrollmentMeta->fieldMappings['lastCounter']['type'] ?? null)
     && !empty($enrollmentMeta->fieldMappings['lastCounter']['nullable'])
+);
+
+echo "\n== hand-written DDL matches the entity mapping ==\n";
+// install() writes raw SQL rather than using SchemaTool, so the schema and the
+// annotations are maintained separately and can drift apart silently — the
+// mismatch only shows up as a Doctrine error on the first insert.
+$moduleSource = (string) file_get_contents($moduleDir . '/Module.php');
+foreach ($found as $entityClass) {
+    $meta = $emSetup->getMetadataDriverImpl();
+    $classMetadata = new Doctrine\ORM\Mapping\ClassMetadata($entityClass);
+    $classMetadata->initializeReflection(new Doctrine\Persistence\Mapping\RuntimeReflectionService());
+    $meta->loadMetadataForClass($entityClass, $classMetadata);
+
+    $table = $classMetadata->getTableName();
+    $short = substr((string) strrchr($entityClass, '\\'), 1);
+
+    // Every table must be created and dropped by the module itself.
+    check(
+        "$short: CREATE TABLE $table present",
+        (bool) preg_match('/CREATE TABLE IF NOT EXISTS\s+' . preg_quote($table, '/') . '\b/', $moduleSource)
+            || (bool) preg_match('/CREATE TABLE\s+' . preg_quote($table, '/') . '\b/', $moduleSource)
+    );
+    check(
+        "$short: uninstall drops $table",
+        str_contains($moduleSource, "DROP TABLE IF EXISTS $table")
+    );
+
+    // And every mapped column must exist in that CREATE TABLE.
+    if (preg_match(
+        '/CREATE TABLE (?:IF NOT EXISTS )?' . preg_quote($table, '/') . '\b(.*?)ENGINE = InnoDB/s',
+        $moduleSource,
+        $ddl
+    )) {
+        // The driver leaves column names as the field names; Omeka's naming
+        // strategy is applied later by the metadata factory, so do it here.
+        $missing = [];
+        foreach ($classMetadata->getColumnNames() as $column) {
+            $column = strtolower((string) preg_replace('/(?<!^)[A-Z]/', '_$0', $column));
+            if (!preg_match('/\b' . preg_quote($column, '/') . '\b/', $ddl[1])) {
+                $missing[] = $column;
+            }
+        }
+        check("$short: all mapped columns in the DDL", !$missing, implode(', ', $missing));
+    }
+}
+// Module.php sits at the module root, outside the PSR-4 src/ path, so match
+// the source rather than autoloading it.
+check(
+    'upgrade() exists, so installed sites get the new tables',
+    (bool) preg_match('/public function upgrade\s*\(/', $moduleSource)
+);
+check(
+    'upgrade() migrates recovery codes off the enrollment row',
+    str_contains($moduleSource, 'migrateRecoveryCodes')
 );
 
 echo "\n== routes assemble ==\n";
