@@ -49,8 +49,9 @@ controller. Installation aborts with a clear message if TwoFactorAuth is active.
 - **Per-user opt-in** from a "Two-factor authentication" tab on the user's own
   page: scan a QR code, confirm with a live code, done.
 - **Passkeys** (hardware key, Touch ID / Face ID, Windows Hello) as an
-  alternative second factor, several per account — see [TODO](#todo), they are
-  not yet tested against a real authenticator.
+  alternative second factor, several per account. **Not** a replacement for the
+  password — see below — and see [TODO](#todo): not yet tested against a real
+  authenticator.
 - **10 single-use recovery codes**, shown once at enrollment, stored hashed.
 - **"Remember this device"** for a configurable number of days (default 14,
   `0` disables the feature).
@@ -80,6 +81,22 @@ enrolled in something the adapter had not been told about.
 
 API-key requests (`KeyAdapter`) are deliberately left alone — there is no human
 present to type a code, and wrapping them would break every API client.
+
+### Passkeys here are a second factor, not a passwordless login
+
+There is **no passkey button on the login page**, and that is deliberate rather
+than unfinished. The order is: email and password first, *then* the passkey
+instead of a code. At the point the login form is submitted the module does not
+yet know who you are, so it has nothing to scope a credential request to.
+
+The other arrangement — a button on `/login` that logs you in with no password
+at all — is a real and reasonable design, and a common one. It is not this one.
+It would make the passkey the *only* thing between an attacker and the account,
+so an unlocked device becomes a full compromise where here it still leaves the
+password. Passkeys are registered without requiring a discoverable credential
+(`requireResidentKey = false`) precisely because that flow is not offered.
+
+Adding passwordless login later would mean re-registering existing passkeys.
 
 Other things worth knowing:
 
