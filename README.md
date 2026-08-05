@@ -50,8 +50,7 @@ controller. Installation aborts with a clear message if TwoFactorAuth is active.
   page: scan a QR code, confirm with a live code, done.
 - **Passkeys** (hardware key, Touch ID / Face ID, Windows Hello) as an
   alternative second factor, several per account. **Not** a replacement for the
-  password — see below — and see [TODO](#todo): not yet tested against a real
-  authenticator.
+  password — see below.
 - **10 single-use recovery codes**, shown once at enrollment, stored hashed.
 - **"Remember this device"** for a configurable number of days (default 14,
   `0` disables the feature).
@@ -303,8 +302,8 @@ Translations are generated — see `language/README.md`.
 ## TODO
 
 - **WebAuthn / passkeys** as a second factor (hardware keys, Touch ID / Face ID,
-  Windows Hello) — **feature-complete on the `passkeys` branch, awaiting
-  testing against real authenticators.** Phishing-resistant
+  Windows Hello) — **complete on the `passkeys` branch**, registered and used to
+  log in against a real platform authenticator. Phishing-resistant
   in a way TOTP is not: a TOTP code can still be relayed through a proxy in real
   time, whereas a passkey is bound to the origin. An *additional* factor type
   alongside TOTP, not a replacement — TOTP needs no special hardware and works on
@@ -317,13 +316,18 @@ Translations are generated — see `language/README.md`.
   the ceremony: registering a passkey from the user page, and presenting one at
   the second step. Settings gained a **Passkey domain**.
 
-  **Not yet exercised against a real authenticator.** The end-to-end tests cover
-  the server contract — both endpoints refuse a request with no pending login,
-  a challenge is refused for an account holding no credential, and verify is
-  refused with no outstanding challenge — but `curl` cannot produce a signature,
-  so the ceremony itself needs a hardware key, a platform authenticator, or a
-  virtual one driven over the Chrome DevTools protocol. Treat it as untested
-  until that has been done.
+  The end-to-end tests cover the server contract — both endpoints refuse a
+  request with no pending login, a challenge is refused for an account holding
+  no credential, and verify is refused with no outstanding challenge. `curl`
+  cannot produce a signature, so the ceremony itself was exercised by hand:
+  registered on a platform authenticator, then used to complete a login.
+
+  Automating that would need a virtual authenticator driven over the Chrome
+  DevTools protocol, which is the obvious next improvement to `test/e2e.php`.
+
+  A note for anyone reading the credential table: a `sign_count` that stays at
+  zero is normal. Plenty of platform authenticators never increment it, so only
+  a counter that goes *backwards* is treated as a cloning signal.
 
   One design note worth keeping: a user holding a passkey counts as enrolled
   even when the WebAuthn library is missing. Reporting otherwise would let them
