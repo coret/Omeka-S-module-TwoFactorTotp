@@ -6,11 +6,16 @@
 /release.sh
 /dist/
 
+# The test suite and the build scripts that live with it. Kept in the working
+# tree, not published; see test/README.md for how to run them.
+/test/
+
 # PHP-CS-Fixer. The docs name .php_cs.cache; v3 writes the other one.
 /.php-cs-fixer.cache
 /.php_cs.cache
 
-# PHPUnit
+# PHPUnit. The config only points into test/, so it goes the same way.
+/phpunit.xml.dist
 /.phpunit.result.cache
 
 # Doctrine proxies are generated at runtime; keep the directory, not its contents.

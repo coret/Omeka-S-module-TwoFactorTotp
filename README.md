@@ -281,9 +281,6 @@ raising the tolerance setting.
 
 ## Development
 
-Three layers, cheapest first. The crypto is the easy part to get right; the
-wiring is where the bugs live, so the last two matter more than they look.
-
 Code style is [Omeka S's own](https://omeka.org/s/docs/developer/contributing/):
 PSR-2 plus their extras. `.php-cs-fixer.dist.php` is Omeka's `.php_cs_module`
 copied verbatim, so it stays in step with upstream — including that it defines
@@ -293,33 +290,13 @@ no `->in()`, which is why the path is given on the command line:
 php-cs-fixer fix .            # or --dry-run --diff to see what it would change
 ```
 
-```sh
-# 0. Dependencies (once). vendor/ is not committed.
-composer install --no-dev
-
-# 1. Unit — RFC 4226 / RFC 6238 vectors, plus service-wiring regressions.
-#    OMEKA_VENDOR is only needed when the module is not sitting in modules/;
-#    the wiring tests skip themselves without it.
-../../vendor/bin/phpunit
-OMEKA_VENDOR=/path/to/omeka-s/vendor ../../vendor/bin/phpunit
-
-# 2. Static — config, DI, entity mapping, routes, templates, assets, and the
-#    contract that every variable a template reads is one its action sets.
-php test/verify-wiring.php
-
-# 3. End-to-end — real HTTP against a running site. The only layer that
-#    dispatches requests, and the only one that catches render-time faults.
-#    Needs a throwaway account; see the header of the file.
-omeka-s-cli user:add e2e@example.com 'E2E' editor 'the-password'
-TOTP_E2E_URL=https://example.org/omeka \
-TOTP_E2E_EMAIL=e2e@example.com \
-TOTP_E2E_PASSWORD=the-password \
-php test/e2e.php
-omeka-s-cli user:delete e2e@example.com
-```
-
-Point `test/e2e.php` at a throwaway account only — it enrolls, resets and logs
-in as that user.
+The test suite is three layers, cheapest first: PHPUnit over the RFC 4226 / RFC 6238
+vectors, a static check of config, DI, entity mapping, routes and templates,
+and an end-to-end pass that dispatches real HTTP against a running site. The
+crypto is the easy part to get right; the wiring is where the bugs live, so the
+last two matter more than they look. Tests and the scripts that generate the
+translation catalogues are kept in the working tree and are not published with
+the module.
 
 Translations are generated — see `language/README.md`.
 

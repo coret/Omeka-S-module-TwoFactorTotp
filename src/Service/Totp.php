@@ -11,7 +11,7 @@ use InvalidArgumentException;
  * Deliberately dependency-free and stateless: this class is the one piece of
  * the module that has to interoperate byte-for-byte with Google Authenticator,
  * Aegis, 1Password and friends, so it is pinned to the published RFC test
- * vectors in test/TotpTest.php rather than to anything Omeka-specific.
+ * vectors rather than to anything Omeka-specific.
  *
  * It knows nothing about users, replay or storage — see TotpManager for that.
  */
