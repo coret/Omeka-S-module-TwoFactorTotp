@@ -5,7 +5,7 @@ Two-factor authentication for Omeka S using **time-based one-time passwords**
 authenticator app — Google Authenticator, Aegis, FreeOTP, 1Password, Bitwarden
 or any other TOTP app.
 
-- **Version:** 0.2.2 — pre-release. Usable, not yet promised stable.
+- **Version:** 1.0.0 — stable. Breaking changes will mean a new major version.
 - **Requires:** Omeka S ^4.0.0, PHP 8.1+ — see [Requirements](#requirements)
 - **License:** GPL-3.0-or-later (Omeka S core is GPL-3.0)
 
@@ -52,6 +52,10 @@ controller. Installation aborts with a clear message if TwoFactorAuth is active.
   alternative second factor, several per account. **Not** a replacement for the
   password — see below.
 - **10 single-use recovery codes**, shown once at enrollment, stored hashed.
+- **Account-wide lockout** after repeated wrong codes, with exponential backoff.
+  Recovery codes are exempt, so it is never a dead end.
+- **Optional encryption of the TOTP secret at rest**, keyed from
+  `local.config.php` rather than from the database.
 - **"Remember this device"** for a configurable number of days (default 14,
   `0` disables the feature).
 - **Force 2FA for chosen roles** — those users are held on the setup page until
@@ -81,6 +85,79 @@ enrolled in something the adapter had not been told about.
 API-key requests (`KeyAdapter`) are deliberately left alone — there is no human
 present to type a code, and wrapping them would break every API client.
 
+### Guessing is bounded per account, not per login
+
+There are two limits, and only the second one actually bounds an attacker.
+
+The **per-login** limit (*Wrong codes allowed per login*, default 5) throws the
+pending login away and sends the user back to the password screen. On its own
+that bounds a sitting rather than an account: a new pending login is one
+password submission away, so somebody who already holds the password can spend
+the budget, re-post the login form, and get another one. With a window of 1
+there are three valid codes out of a million at any moment, which at a modest
+request rate is a couple of hours' work.
+
+So there is also a **per-account** limit (*Failed attempts before the account is
+locked*, default 10). It is kept in user settings, survives new logins, and
+locks the second step for a while — 15 minutes by default, doubling with each
+further lockout on the same account, capped at a day. A correct code, passkey
+or recovery code clears it.
+
+Recovery codes are deliberately **not** subject to it. Ten characters from a
+32-character alphabet leaves nothing to brute-force, and exempting them means
+the lockout can never leave somebody with no way into their own account.
+
+### The TOTP secret can be encrypted at rest
+
+Optional, off unless you configure a key, and worth doing. Everything else the
+module stores is already protected — recovery codes are hashed, device
+validators are digested, only public keys are kept for passkeys — but the TOTP
+secret has to be recoverable, because the server computes HMACs with it. Read
+access to the database alone is therefore a permanent second-factor bypass for
+every enrolled account.
+
+Add a key to Omeka's `config/local.config.php` — **not** to a module setting,
+which would sit in the same database as the secrets it is meant to protect:
+
+```php
+'twofactortotp' => [
+    'encryption_key' => 'a long random string, e.g. from `openssl rand -base64 48`',
+],
+```
+
+Secrets are then stored AES-256-GCM encrypted. Existing enrollments are
+converted when the module upgrades, and any that are missed — because the key
+was added later — convert themselves the next time their owner logs in, so you
+can turn this on at any point without locking anybody out.
+
+There is deliberately **no default key**. One shipped in the source would be
+known to anyone who can read the repository, so it would turn "stored in clear,
+and an audit will say so" into "looks protected, is not" — which is worse,
+because it silences the check that would otherwise notice. The module's
+configuration page tells you which state you are in.
+
+**Changing the key later.** Keep the old one while the change works through:
+
+```php
+'twofactortotp' => [
+    'encryption_key' => 'the new key',
+    'previous_encryption_keys' => ['the key it replaces'],
+],
+```
+
+Retired keys are only ever used to read. A secret still under one is rewritten
+under the current key the next time its owner logs in, so a rotation completes
+by itself; once everybody has been through, drop `previous_encryption_keys`. If
+you have accounts that never log in, `disable`/re-enroll is the only other way
+to move them.
+
+**Keep at least one key that each row was written under.** Lose them all and
+those secrets are unreadable, and the module says so loudly rather than quietly
+rejecting every code: you get an error naming the setting, which is the
+difference between a five-minute fix and a day of guessing. Recovery codes are
+unaffected either way, and the "If you get locked out" recipes below still
+work.
+
 ### Passkeys here are a second factor, not a passwordless login
 
 There is **no passkey button on the login page**, and that is deliberate rather
@@ -96,6 +173,12 @@ password. Passkeys are registered without requiring a discoverable credential
 (`requireResidentKey = false`) precisely because that flow is not offered.
 
 Adding passwordless login later would mean re-registering existing passkeys.
+
+Managing passkeys asks for the account password first, and the confirmation
+lasts five minutes. Turning TOTP off and reissuing recovery codes already did;
+adding a passkey is the same kind of change, and arguably a worse one to leave
+open, because a passkey an attacker plants on a hijacked session survives the
+victim changing their password.
 
 Also out of scope: SMS, which is weaker than either factor offered here, and
 integration with CAS, LDAP or Single Sign-On — those systems own their own
@@ -218,6 +301,11 @@ it first.
    Upgrading from 0.1 adds the last two and moves existing recovery codes into
    `two_factor_totp_recovery_code`. The codes themselves do not change, so any
    you have already written down keep working.
+
+   Upgrading to 0.3 widens `two_factor_totp_enrollment.secret` to make room for
+   the encrypted form, and encrypts what is already stored if you have
+   configured a key. Both steps are safe to run twice and neither loses data. If
+   you have not configured a key, nothing about how secrets are stored changes.
 3. Optionally configure it (**Modules → TwoFactorTotp → Configure**).
 4. Each user enables it for themselves from their own user page.
 
@@ -231,11 +319,20 @@ it first.
 | Remember a device for (days) | 14 | `0` removes the option entirely. |
 | Accepted time steps either side | 1 | Clock-drift tolerance, in 30s steps. |
 | Time allowed to enter the code | 300 s | Lifetime of a pending login. |
-| Wrong codes allowed per login | 5 | Then back to the password screen. |
+| Wrong codes allowed per login | 5 | Then back to the password screen. Per sitting. |
+| Failed attempts before the account is locked | 10 | Per account, and the limit that actually bounds guessing. `0` turns it off. |
+| How long the account stays locked | 900 s | Doubles with each further lockout, capped at a day. |
+
+The TOTP encryption key is deliberately **not** here — it goes in Omeka's
+`config/local.config.php`; see [above](#the-totp-secret-can-be-encrypted-at-rest).
 
 ## If you get locked out
 
 In order of preference:
+
+0. **Wait, if the account is locked.** Repeated wrong codes lock the second step
+   for a while; the message says how long. A recovery code works throughout —
+   the lockout deliberately does not apply to it.
 
 1. **Use a recovery code** — the link is on the code screen.
 2. **Ask another administrator** to reset it from your user page
@@ -254,6 +351,14 @@ In order of preference:
    what matters; leftover rows in `two_factor_totp_recovery_code` are harmless,
    since a recovery code is only ever offered when a second factor is owed, and
    enrolling again replaces the whole set.
+
+   To clear a lockout by hand instead of waiting it out:
+
+   ```sql
+   DELETE FROM user_setting
+    WHERE id LIKE 'twofactortotp_factor_%'
+      AND user_id = (SELECT id FROM user WHERE email = 'you@example.org');
+   ```
 
 4. **Turn the whole module off from the database.** The nuclear option, for the
    case where the module itself is what is broken — it replaces the login
@@ -294,9 +399,13 @@ The test suite is three layers, cheapest first: PHPUnit over the RFC 4226 / RFC 
 vectors, a static check of config, DI, entity mapping, routes and templates,
 and an end-to-end pass that dispatches real HTTP against a running site. The
 crypto is the easy part to get right; the wiring is where the bugs live, so the
-last two matter more than they look. Tests and the scripts that generate the
-translation catalogues are kept in the working tree and are not published with
-the module.
+last two matter more than they look. `test/README.md` has the commands.
+
+Tests and the translation build scripts are tracked in git but kept out of the
+*published module*, by `export-ignore` in `.gitattributes` and by the prune step
+in the release script. That is the right place for the distinction: a released
+zip has no business carrying them, and neither has a repository any business
+being the only copy of them.
 
 Translations are generated — see `language/README.md`.
 
