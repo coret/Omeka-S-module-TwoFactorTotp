@@ -47,7 +47,7 @@ class ConfigForm extends Form
             'type' => 'MultiCheckbox',
             'options' => [
                 'label' => 'Require two-factor authentication for these roles', // @translate
-                'info' => 'Users with a selected role must set up two-factor authentication before they can use the admin interface. Existing sessions are not affected.', // @translate
+                'info' => 'Users with a selected role are held on the setup page, anywhere on the site, until they have enrolled in a second factor. Any factor satisfies it. Existing sessions are not affected.', // @translate
                 'value_options' => $this->acl ? $this->acl->getRoleLabels() : [],
             ],
             'attributes' => [
@@ -108,6 +108,34 @@ class ConfigForm extends Form
                 'id' => 'twofactortotp_max_attempts',
                 'min' => 1,
                 'max' => 20,
+            ],
+        ]);
+
+        $this->add([
+            'name' => 'twofactortotp_lockout_threshold',
+            'type' => 'Number',
+            'options' => [
+                'label' => 'Failed attempts before the account is locked', // @translate
+                'info' => 'Counted per account rather than per login, so starting a new login does not hand out a fresh set of guesses. Recovery codes are never locked, so nobody is left with no way in. Set to 0 to turn the lockout off.', // @translate
+            ],
+            'attributes' => [
+                'id' => 'twofactortotp_lockout_threshold',
+                'min' => 0,
+                'max' => 100,
+            ],
+        ]);
+
+        $this->add([
+            'name' => 'twofactortotp_lockout_seconds',
+            'type' => 'Number',
+            'options' => [
+                'label' => 'How long the account stays locked (seconds)', // @translate
+                'info' => 'The length of the first lockout. Each further lockout on the same account is twice as long as the one before, up to a day.', // @translate
+            ],
+            'attributes' => [
+                'id' => 'twofactortotp_lockout_seconds',
+                'min' => 30,
+                'max' => 86400,
             ],
         ]);
 

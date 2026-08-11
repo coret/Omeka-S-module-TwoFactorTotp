@@ -6,7 +6,7 @@ $this->htmlElement('body')->appendAttribute('class', 'two-factor-totp disable');
 
 <div class="messages">
     <ul class="messages"><li class="warning"><?php
-        echo $translate('This removes the second factor from your account, deletes your recovery codes, and signs out every device you had marked as trusted. Your account will be protected by its password alone.');
+        echo $translate('This removes the authenticator app from your account and signs out every device you had marked as trusted. If it was your last second factor your recovery codes go with it, and your account will be protected by its password alone.');
     ?></li></ul>
 </div>
 

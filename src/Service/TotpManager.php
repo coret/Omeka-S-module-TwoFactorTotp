@@ -36,18 +36,54 @@ class TotpManager
 
     protected RecoveryCodeManager $recoveryCodes;
 
+    protected SecretCipher $cipher;
+
     public function __construct(
         EntityManager $entityManager,
         Totp $totp,
         Settings $settings,
         TrustedDeviceManager $trustedDevices,
-        RecoveryCodeManager $recoveryCodes
+        RecoveryCodeManager $recoveryCodes,
+        ?SecretCipher $cipher = null
     ) {
         $this->entityManager = $entityManager;
         $this->totp = $totp;
         $this->settings = $settings;
         $this->trustedDevices = $trustedDevices;
         $this->recoveryCodes = $recoveryCodes;
+        // A cipher with no key is a no-op, which is also what an install that
+        // has configured nothing should get.
+        $this->cipher = $cipher ?? new SecretCipher(null);
+    }
+
+    /**
+     * The base32 secret itself.
+     *
+     * Everything that needs the actual secret — building the provisioning URI,
+     * showing the manual-entry key, checking a code — goes through here rather
+     * than reading the column, because the column may hold ciphertext.
+     */
+    public function getPlainSecret(TotpEnrollment $enrollment): string
+    {
+        return $this->cipher->decrypt((string) $enrollment->getSecret());
+    }
+
+    /**
+     * Bring a stored secret up to date: one written before encryption was
+     * configured, or one still under a retired key.
+     *
+     * Called after a code has verified, which is the moment we know the secret
+     * is good and the user is present. That, rather than a one-shot migration,
+     * is what lets an operator turn encryption on — or change the key — at any
+     * time: rows convert themselves as their owners log in.
+     */
+    protected function encryptStoredSecretIfNeeded(TotpEnrollment $enrollment, string $plainSecret): void
+    {
+        if (!$this->cipher->needsRewrite((string) $enrollment->getSecret())) {
+            return;
+        }
+
+        $enrollment->setSecret($this->cipher->encrypt($plainSecret));
     }
 
     // --------------------------------------------------------------- queries
@@ -89,7 +125,7 @@ class TotpManager
     public function getProvisioningUri(TotpEnrollment $enrollment): string
     {
         return $this->totp->provisioningUri(
-            (string) $enrollment->getSecret(),
+            $this->getPlainSecret($enrollment),
             (string) $enrollment->getUser()->getEmail(),
             $this->getIssuer()
         );
@@ -133,7 +169,7 @@ class TotpManager
         }
 
         $enrollment
-            ->setSecret($this->totp->generateSecret())
+            ->setSecret($this->cipher->encrypt($this->totp->generateSecret()))
             ->setIsConfirmed(false)
             ->setLastCounter(null)
             ->setRecoveryCodes([]);
@@ -156,7 +192,7 @@ class TotpManager
             return null;
         }
 
-        $counter = $this->totp->verify((string) $enrollment->getSecret(), $code, $this->getWindow());
+        $counter = $this->totp->verify($this->getPlainSecret($enrollment), $code, $this->getWindow());
         if (null === $counter) {
             return null;
         }
@@ -173,22 +209,37 @@ class TotpManager
     }
 
     /**
-     * Turn the second factor off and drop every trusted device with it —
-     * otherwise a stale device cookie would outlive the factor it stands in for.
+     * Turn TOTP off and drop every trusted device with it — otherwise a stale
+     * device cookie would outlive the factor it stands in for.
+     *
+     * @param bool $dropRecoveryCodes Recovery codes belong to the user, not to
+     *        this enrollment, so whether they go with it is the caller's call:
+     *        they must survive as long as *some* factor is still enrolled, or
+     *        an account left holding only a passkey would have no fallback.
+     *        Only the caller can see the other factors — this class
+     *        deliberately does not know they exist (see SecondFactorRegistry
+     *        for why the dependency runs one way).
      */
-    public function disable(User $user): void
+    public function disable(User $user, bool $dropRecoveryCodes = true): void
     {
         $enrollment = $this->findEnrollment($user);
         if ($enrollment) {
             $this->entityManager->remove($enrollment);
         }
         $this->trustedDevices->revokeAll($user);
-        // Recovery codes belong to the user, not the enrollment, so removing
-        // them is now an explicit step. TOTP is presently the only factor, so
-        // losing it leaves nothing for the codes to recover *into*. Once other
-        // factors exist this must only fire when the last one goes.
-        $this->recoveryCodes->deleteAll($user);
+        if ($dropRecoveryCodes) {
+            $this->recoveryCodes->deleteAll($user);
+        }
         $this->entityManager->flush();
+    }
+
+    /**
+     * Drop every recovery code. For the caller that has just removed the last
+     * factor and so has nothing left for the codes to recover into.
+     */
+    public function deleteRecoveryCodes(User $user): void
+    {
+        $this->recoveryCodes->deleteAll($user);
     }
 
     // ---------------------------------------------------------- verification
@@ -208,7 +259,9 @@ class TotpManager
             return false;
         }
 
-        $counter = $this->totp->verify((string) $enrollment->getSecret(), $code, $this->getWindow());
+        $plainSecret = $this->getPlainSecret($enrollment);
+
+        $counter = $this->totp->verify($plainSecret, $code, $this->getWindow());
         if (null === $counter) {
             return false;
         }
@@ -222,6 +275,7 @@ class TotpManager
         $enrollment
             ->setLastCounter($counter)
             ->setLastUsedAt(new DateTime('now'));
+        $this->encryptStoredSecretIfNeeded($enrollment, $plainSecret);
         $this->entityManager->flush();
 
         return true;

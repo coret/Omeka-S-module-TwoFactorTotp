@@ -105,6 +105,12 @@
                     window.location.href = root.dataset.loginUrl;
                     return;
                 }
+                // The account is now throttled. The recovery form is exempt and
+                // is where the server's message is waiting.
+                if (result.body && result.body.error === 'locked') {
+                    window.location.href = root.dataset.recoveryUrl;
+                    return;
+                }
                 button.disabled = false;
                 say(root.dataset.failed, true);
             }).catch(function (error) {

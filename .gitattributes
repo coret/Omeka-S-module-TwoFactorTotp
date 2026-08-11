@@ -1,0 +1,19 @@
+# Kept out of `git archive`, so a tarball built straight from GitHub's
+# "Download ZIP" has the same shape as the one release.sh publishes.
+#
+# release.sh prunes most of these from its staging copy by hand as well, and
+# then asserts the archive contains none of them — belt and braces, because the
+# two paths to a zip are used by different people.
+.gitattributes          export-ignore
+.gitignore              export-ignore
+.php-cs-fixer.dist.php  export-ignore
+phpunit.xml.dist        export-ignore
+test/                   export-ignore
+
+# Translation *sources* and the notes for translators. The registration guide
+# asks for language files to be excluded, but only the sources can go: Omeka
+# loads language/%s.mo at runtime (see the translator config in
+# config/module.config.php), so the compiled catalogues must ship.
+language/*.po           export-ignore
+language/*.pot          export-ignore
+language/README.md      export-ignore

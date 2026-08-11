@@ -19,6 +19,8 @@ return [
     'service_manager' => [
         'factories' => [
             Service\Totp::class => InvokableFactory::class,
+            Service\FactorThrottle::class => Service\Factory\FactorThrottleFactory::class,
+            Service\SecretCipher::class => Service\Factory\SecretCipherFactory::class,
             Authentication\Factor\TotpFactor::class => Service\Factory\TotpFactorFactory::class,
             Authentication\Factor\PasskeyFactor::class => Service\Factory\PasskeyFactorFactory::class,
             Service\PasskeyManager::class => Service\Factory\PasskeyManagerFactory::class,
@@ -27,6 +29,7 @@ return [
             Service\RecoveryCodeManager::class => Service\Factory\RecoveryCodeManagerFactory::class,
             Service\TotpManager::class => Service\Factory\TotpManagerFactory::class,
             Service\TrustedDeviceManager::class => Service\Factory\TrustedDeviceManagerFactory::class,
+            Stdlib\PasswordConfirmation::class => Service\Factory\PasswordConfirmationFactory::class,
             Stdlib\PendingLogin::class => Service\Factory\PendingLoginFactory::class,
         ],
         'delegators' => [
@@ -153,6 +156,11 @@ return [
             'twofactortotp_window' => 1,
             'twofactortotp_pending_ttl' => 300,
             'twofactortotp_max_attempts' => 5,
+            // Per *account*, unlike max_attempts, which is per pending login.
+            // Only the account-wide count actually bounds guessing: a new
+            // pending login is one password submission away. 0 turns it off.
+            'twofactortotp_lockout_threshold' => 10,
+            'twofactortotp_lockout_seconds' => 900,
         ],
     ],
 ];

@@ -8,6 +8,7 @@ use TwoFactorTotp\Controller\Admin\TotpController;
 use TwoFactorTotp\Service\PasskeyManager;
 use TwoFactorTotp\Service\SecondFactorRegistry;
 use TwoFactorTotp\Stdlib\ChallengeStore;
+use TwoFactorTotp\Stdlib\PasswordConfirmation;
 use TwoFactorTotp\Service\TotpManager;
 use TwoFactorTotp\Service\TrustedDeviceManager;
 
@@ -21,7 +22,8 @@ class AdminTotpControllerFactory implements FactoryInterface
             $services->get(TrustedDeviceManager::class),
             $services->get(SecondFactorRegistry::class),
             $services->get(PasskeyManager::class),
-            $services->get(ChallengeStore::class)
+            $services->get(ChallengeStore::class),
+            $services->get(PasswordConfirmation::class)
         );
     }
 }

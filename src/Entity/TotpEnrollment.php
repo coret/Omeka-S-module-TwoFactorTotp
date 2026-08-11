@@ -34,9 +34,14 @@ class TotpEnrollment extends AbstractEntity
     protected $user;
 
     /**
-     * The base32 shared secret.
+     * The shared secret: base32, or the ciphertext of it when an encryption
+     * key is configured. Always read through TotpManager::getPlainSecret()
+     * rather than straight off this property.
      *
-     * @Column(type="string", length=64)
+     * 255 rather than 64 because the encrypted form is a prefix plus base64 of
+     * a nonce, a tag and the ciphertext — about 87 characters. See SecretCipher.
+     *
+     * @Column(type="string", length=255)
      */
     protected $secret;
 

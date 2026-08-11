@@ -5,6 +5,7 @@ namespace TwoFactorTotp\Service\Factory;
 use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use TwoFactorTotp\Service\RecoveryCodeManager;
+use TwoFactorTotp\Service\SecretCipher;
 use TwoFactorTotp\Service\Totp;
 use TwoFactorTotp\Service\TotpManager;
 use TwoFactorTotp\Service\TrustedDeviceManager;
@@ -18,7 +19,8 @@ class TotpManagerFactory implements FactoryInterface
             $services->get(Totp::class),
             $services->get('Omeka\Settings'),
             $services->get(TrustedDeviceManager::class),
-            $services->get(RecoveryCodeManager::class)
+            $services->get(RecoveryCodeManager::class),
+            $services->get(SecretCipher::class)
         );
     }
 }

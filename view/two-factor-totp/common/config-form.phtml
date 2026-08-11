@@ -14,8 +14,20 @@ $form->prepare();
     ); ?>
 </p>
 
+<?php if ($secretsEncrypted): ?>
+<p class="totp-encryption totp-encryption-on">
+    <?php echo $translate('TOTP secrets are encrypted at rest.'); ?>
+</p>
+<?php else: ?>
+<p class="totp-encryption totp-encryption-off">
+    <?php echo $translate('TOTP secrets are stored unencrypted, so read access to the database alone is enough to bypass the second factor. To encrypt them, set twofactortotp.encryption_key in Omeka\'s config/local.config.php — existing enrollments convert themselves as their owners log in.'); ?>
+</p>
+<?php endif; ?>
+
 <?php echo $this->formCollection($form, false); ?>
 
 <style>
 .totp-server-time { color: #555; }
+.totp-encryption-on { color: #2a6b4d; }
+.totp-encryption-off { color: #8a5c06; }
 </style>

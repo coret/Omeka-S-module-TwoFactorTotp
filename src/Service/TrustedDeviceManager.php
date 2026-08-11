@@ -202,7 +202,7 @@ class TrustedDeviceManager
             (new DateTime('now'))->add(new DateInterval('P' . $this->getTrustDays() . 'D'))->getTimestamp(),
             '/',
             null,
-            $this->isHttps(),
+            $this->isSecureCookie(),
             true // httpOnly: no script ever needs to read this
         );
         // Lax rather than Strict: the cookie must survive arriving at /login
@@ -213,9 +213,57 @@ class TrustedDeviceManager
 
     public function buildClearCookie(): SetCookie
     {
-        $cookie = new SetCookie(self::COOKIE_NAME, '', 1, '/', null, $this->isHttps(), true);
+        $cookie = new SetCookie(self::COOKIE_NAME, '', 1, '/', null, $this->isSecureCookie(), true);
         $cookie->setSameSite('Lax');
         return $cookie;
+    }
+
+    /**
+     * Whether to mark the cookie Secure.
+     *
+     * Deliberately not the same question as "is this request HTTPS". This
+     * cookie stands in for the entire second factor, so it must not travel in
+     * clear — and inferring the answer from the request gets it wrong behind
+     * any proxy that terminates TLS and signals it in a way Laminas does not
+     * read, which fails in the unsafe direction and silently.
+     *
+     * So: Secure by default, and off only for the local development hosts
+     * where the browser has no HTTPS to offer and the flag would simply stop
+     * the cookie ever coming back.
+     */
+    protected function isSecureCookie(): bool
+    {
+        return $this->isHttps() || !$this->isLocalDevelopmentHost();
+    }
+
+    /**
+     * Hosts a browser treats as a secure context over plain HTTP, plus the
+     * suffixes conventionally reserved for local development.
+     */
+    protected function isLocalDevelopmentHost(): bool
+    {
+        $host = trim(strtolower($this->currentHost()), '[]');
+
+        if (in_array($host, ['localhost', '127.0.0.1', '::1'], true)) {
+            return true;
+        }
+        foreach (['.localhost', '.local', '.test', '.localdomain'] as $suffix) {
+            if ($suffix === substr($host, -strlen($suffix))) {
+                return true;
+            }
+        }
+
+        // An unknown host is treated as public: the safe direction is to set
+        // the flag and have someone notice, not to omit it and have nobody.
+        return false;
+    }
+
+    protected function currentHost(): string
+    {
+        if ($this->request) {
+            return (string) $this->request->getUri()->getHost();
+        }
+        return (string) preg_replace('/:\d+$/', '', (string) ($_SERVER['HTTP_HOST'] ?? ''));
     }
 
     protected function readCookie(): ?string

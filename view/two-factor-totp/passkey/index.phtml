@@ -24,6 +24,7 @@ $this->headScript()->appendFile($this->assetUrl('js/passkey.js', 'TwoFactorTotp'
      data-challenge-url="<?php echo $escape($challengeUrl); ?>"
      data-verify-url="<?php echo $escape($verifyUrl); ?>"
      data-login-url="<?php echo $escape($this->url('login')); ?>"
+     data-recovery-url="<?php echo $escape($recoveryUrl); ?>"
      data-waiting="<?php echo $escape($translate('Touch your key, or use your device unlock.')); ?>"
      data-failed="<?php echo $escape($translate('That did not work. Try again, or use another way in.')); ?>"
      data-cancelled="<?php echo $escape($translate('Cancelled.')); ?>"

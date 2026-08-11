@@ -6,29 +6,42 @@
  * It sits *outside* the surrounding form's inputs on purpose: enrollment is a
  * multi-step flow of its own, not something to save along with a display name.
  *
+ * Two variables carry the distinction that matters here. $hasAnyFactor is
+ * "does this account have a second factor at all", which is what the status
+ * line and the recovery-code count are about; $isEnabled is "does it have TOTP
+ * specifically", which is all the TOTP setup and disable links should depend
+ * on. Conflating them is what previously hid passkeys from everyone who had
+ * not already enrolled in TOTP.
+ *
  * @var \Omeka\Api\Representation\UserRepresentation $user
  * @var \Omeka\Entity\User $userEntity
  * @var bool $isSelf
- * @var bool $isEnabled
+ * @var bool $isEnabled           TOTP specifically
+ * @var bool $hasAnyFactor        TOTP, a passkey, or anything else registered
  * @var bool $isForced
  * @var int $recoveryCodesRemaining
  * @var int $lowWaterMark
  * @var int $deviceCount
+ * @var int $passkeyCount
+ * @var bool $passkeysAvailable
  * @var bool $trustedDevicesEnabled
  * @var bool $canReset
  */
 $translate = $this->plugin('translate');
-$escape = $this->plugin('escapeHtml');
 ?>
 <fieldset id="two-factor-totp" class="section">
 
 <?php if ($isSelf): ?>
 
-    <?php if ($isEnabled): ?>
+    <?php if ($hasAnyFactor): ?>
 
         <p class="totp-status totp-status-on">
             <strong><?php echo $translate('Two-factor authentication is enabled.'); ?></strong>
-            <?php echo $translate('You are asked for a code from your authenticator app when you log in.'); ?>
+            <?php if ($isEnabled): ?>
+                <?php echo $translate('You are asked for a code from your authenticator app when you log in.'); ?>
+            <?php else: ?>
+                <?php echo $translate('You are asked for your passkey when you log in.'); ?>
+            <?php endif; ?>
         </p>
 
         <?php if ($recoveryCodesRemaining <= $lowWaterMark): ?>
@@ -52,19 +65,28 @@ $escape = $this->plugin('escapeHtml');
                 $this->url('admin/two-factor', ['action' => 'recovery-codes']),
                 ['class' => 'button']
             ); ?>
-            <?php if ($trustedDevicesEnabled): ?>
+            <?php if (!$isEnabled): ?>
+            <?php echo $this->hyperlink(
+                $translate('Enable two-factor authentication'),
+                $this->url('admin/two-factor', ['action' => 'setup']),
+                ['class' => 'button']
+            ); ?>
+            <?php endif; ?>
+            <?php if ($passkeysAvailable): ?>
             <?php echo $this->hyperlink(
                 sprintf($translate('Passkeys (%d)'), $passkeyCount),
                 $this->url('admin/two-factor', ['action' => 'passkeys']),
                 ['class' => 'button']
             ); ?>
+            <?php endif; ?>
+            <?php if ($trustedDevicesEnabled): ?>
             <?php echo $this->hyperlink(
                 $translate('Manage trusted devices'),
                 $this->url('admin/two-factor', ['action' => 'devices']),
                 ['class' => 'button']
             ); ?>
             <?php endif; ?>
-            <?php if (!$isForced): ?>
+            <?php if ($isEnabled && !$isForced): ?>
             <?php echo $this->hyperlink(
                 $translate('Disable two-factor authentication'),
                 $this->url('admin/two-factor', ['action' => 'disable']),
@@ -81,7 +103,7 @@ $escape = $this->plugin('escapeHtml');
 
         <p class="totp-status totp-status-off">
             <strong><?php echo $translate('Two-factor authentication is not enabled.'); ?></strong>
-            <?php echo $translate('Add a second step to your login using an authenticator app on your phone, so a stolen password is not enough on its own.'); ?>
+            <?php echo $translate('Add a second step to your login — a code from an authenticator app on your phone, or a passkey such as a hardware key, Touch ID or Windows Hello — so a stolen password is not enough on its own.'); ?>
         </p>
 
         <?php if ($isForced): ?>
@@ -94,6 +116,13 @@ $escape = $this->plugin('escapeHtml');
                 $this->url('admin/two-factor', ['action' => 'setup']),
                 ['class' => 'button']
             ); ?>
+            <?php if ($passkeysAvailable): ?>
+            <?php echo $this->hyperlink(
+                sprintf($translate('Passkeys (%d)'), $passkeyCount),
+                $this->url('admin/two-factor', ['action' => 'passkeys']),
+                ['class' => 'button']
+            ); ?>
+            <?php endif; ?>
         </p>
 
     <?php endif; ?>
@@ -101,7 +130,7 @@ $escape = $this->plugin('escapeHtml');
 <?php else: ?>
 
     <p class="totp-status">
-        <?php if ($isEnabled): ?>
+        <?php if ($hasAnyFactor): ?>
             <strong><?php echo $translate('Two-factor authentication is enabled for this user.'); ?></strong>
         <?php else: ?>
             <strong><?php echo $translate('Two-factor authentication is not enabled for this user.'); ?></strong>
@@ -112,7 +141,7 @@ $escape = $this->plugin('escapeHtml');
         <?php echo $translate('Only the account holder can set this up — nobody else can see or change their secret.'); ?>
     </p>
 
-    <?php if ($canReset && $isEnabled): ?>
+    <?php if ($canReset && $hasAnyFactor): ?>
     <p class="totp-actions">
         <?php echo $this->hyperlink(
             $translate('Reset two-factor authentication'),

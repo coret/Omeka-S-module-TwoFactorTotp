@@ -6,16 +6,16 @@
 /release.sh
 /dist/
 
-# The test suite and the build scripts that live with it. Kept in the working
-# tree, not published; see test/README.md for how to run them.
-/test/
+# The test suite, phpunit.xml.dist and .gitattributes are tracked on purpose:
+# they are kept out of the *published module* by .gitattributes' export-ignore
+# and by release.sh's prune step, which is the right place for that. Ignoring
+# them here as well would leave the only copy of the tests on one disk.
 
 # PHP-CS-Fixer. The docs name .php_cs.cache; v3 writes the other one.
 /.php-cs-fixer.cache
 /.php_cs.cache
 
-# PHPUnit. The config only points into test/, so it goes the same way.
-/phpunit.xml.dist
+# PHPUnit's run cache, but not its config.
 /.phpunit.result.cache
 
 # Doctrine proxies are generated at runtime; keep the directory, not its contents.

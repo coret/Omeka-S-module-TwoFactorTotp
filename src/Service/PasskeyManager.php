@@ -4,6 +4,7 @@ namespace TwoFactorTotp\Service;
 
 use DateTime;
 use Doctrine\ORM\EntityManager;
+use Laminas\Http\PhpEnvironment\Request as HttpRequest;
 use Omeka\Entity\User;
 use Omeka\Settings\Settings;
 use TwoFactorTotp\Entity\WebAuthnCredential;
@@ -35,14 +36,27 @@ class PasskeyManager
     /** Seconds the browser gives the user to touch the key. */
     const CEREMONY_TIMEOUT = 60;
 
+    /**
+     * A hostname and nothing else: labels of alphanumerics and inner hyphens,
+     * dot-separated. Anything with a scheme, a path, a space or a stray colon
+     * in it is not a host, whatever the Host header claims.
+     */
+    const HOSTNAME_PATTERN = '/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/';
+
     protected EntityManager $entityManager;
 
     protected Settings $settings;
 
-    public function __construct(EntityManager $entityManager, Settings $settings)
-    {
+    protected ?HttpRequest $request;
+
+    public function __construct(
+        EntityManager $entityManager,
+        Settings $settings,
+        ?HttpRequest $request = null
+    ) {
         $this->entityManager = $entityManager;
         $this->settings = $settings;
+        $this->request = $request;
     }
 
     /**
@@ -117,16 +131,45 @@ class PasskeyManager
      */
     public function getRelyingPartyId(): string
     {
-        $configured = trim((string) $this->settings->get('twofactortotp_rp_id', ''));
-        if ('' !== $configured) {
+        $configured = $this->toHostname((string) $this->settings->get('twofactortotp_rp_id', ''));
+        if (null !== $configured) {
             return $configured;
         }
 
-        // Fall back to the host actually serving the request.
-        $host = (string) ($_SERVER['HTTP_HOST'] ?? '');
-        $host = (string) preg_replace('/:\d+$/', '', $host);
+        // Fall back to the host actually serving the request, taken from the
+        // injected request rather than from $_SERVER — same value, but one
+        // that can be reasoned about and tested.
+        return $this->toHostname($this->requestHost()) ?? 'localhost';
+    }
 
-        return '' !== $host ? $host : 'localhost';
+    protected function requestHost(): string
+    {
+        if ($this->request) {
+            return (string) $this->request->getUri()->getHost();
+        }
+        return (string) ($_SERVER['HTTP_HOST'] ?? '');
+    }
+
+    /**
+     * Reduce a configured value or a Host header to a bare hostname, or null
+     * if it is not one.
+     *
+     * A browser will refuse a ceremony whose relying-party id does not cover
+     * the origin it is talking to, so a forged Host buys an attacker nothing
+     * directly. Validating anyway keeps a header nobody controls from reaching
+     * the WebAuthn library as though it were configuration.
+     */
+    protected function toHostname(string $value): ?string
+    {
+        $host = strtolower(trim($value));
+        $host = (string) preg_replace('/:\d+$/', '', $host);
+        $host = trim($host, '[]');
+
+        if ('' === $host) {
+            return null;
+        }
+
+        return preg_match(self::HOSTNAME_PATTERN, $host) ? $host : null;
     }
 
     public function getRelyingPartyName(): string

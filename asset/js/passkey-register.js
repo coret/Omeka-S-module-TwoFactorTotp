@@ -59,6 +59,13 @@
                 credentials: 'same-origin',
                 headers: {'X-Requested-With': 'XMLHttpRequest'}
             }).then(function (response) {
+                // The password confirmation behind this page has a shorter life
+                // than the page does. Reloading brings back the prompt rather
+                // than reporting a failure the user can do nothing about.
+                if (403 === response.status) {
+                    window.location.reload();
+                    throw new Error('confirm');
+                }
                 if (!response.ok) {
                     throw new Error(root.dataset.failed);
                 }
@@ -101,6 +108,10 @@
                     window.location.href = result.body.redirect;
                     return;
                 }
+                if (result.body && result.body.error === 'confirm_password') {
+                    window.location.reload();
+                    return;
+                }
                 button.disabled = false;
                 say(
                     result.body && result.body.error === 'already_registered'
@@ -109,6 +120,9 @@
                     true
                 );
             }).catch(function (error) {
+                if (error && 'confirm' === error.message) {
+                    return;
+                }
                 button.disabled = false;
                 // InvalidStateError is what the browser throws when
                 // excludeCredentials matched: this key is already registered.

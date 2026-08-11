@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Laminas\Authentication\AuthenticationService;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
+use TwoFactorTotp\Service\FactorThrottle;
 use TwoFactorTotp\Service\PasskeyManager;
 use TwoFactorTotp\Service\TrustedDeviceManager;
 use TwoFactorTotp\Stdlib\ChallengeStore;
@@ -24,6 +25,7 @@ use TwoFactorTotp\Stdlib\PendingLogin;
 class PasskeyController extends AbstractActionController
 {
     use SecondFactorTrait;
+    use JsonEndpointTrait;
 
     protected EntityManager $entityManager;
 
@@ -37,13 +39,16 @@ class PasskeyController extends AbstractActionController
 
     protected ChallengeStore $challenges;
 
+    protected FactorThrottle $throttle;
+
     public function __construct(
         EntityManager $entityManager,
         AuthenticationService $auth,
         PasskeyManager $passkeys,
         TrustedDeviceManager $trustedDevices,
         PendingLogin $pendingLogin,
-        ChallengeStore $challenges
+        ChallengeStore $challenges,
+        FactorThrottle $throttle
     ) {
         $this->entityManager = $entityManager;
         $this->auth = $auth;
@@ -51,6 +56,7 @@ class PasskeyController extends AbstractActionController
         $this->trustedDevices = $trustedDevices;
         $this->pendingLogin = $pendingLogin;
         $this->challenges = $challenges;
+        $this->throttle = $throttle;
     }
 
     /**
@@ -65,6 +71,17 @@ class PasskeyController extends AbstractActionController
         $user = $this->pendingUser();
         if (!$user) {
             return $this->expired();
+        }
+
+        // A locked account is turned away here as well, so the passkey page is
+        // not a way around the throttle the code screen enforces.
+        $lockedSeconds = $this->throttle->getSecondsRemaining((int) $user->getId());
+        if ($lockedSeconds > 0) {
+            $this->messenger()->addError(sprintf(
+                'Too many failed attempts. This account cannot use a code for another %d minutes. A recovery code still works.', // @translate
+                max(1, (int) ceil($lockedSeconds / 60))
+            ));
+            return $this->redirect()->toRoute('two-factor', ['action' => 'recovery']);
         }
 
         $offerRemember = $this->trustedDevices->isEnabled();
@@ -87,9 +104,17 @@ class PasskeyController extends AbstractActionController
      */
     public function challengeAction()
     {
+        if (!$this->isSameOriginXhrPost()) {
+            return $this->json(['error' => 'bad_request'], 400);
+        }
+
         $user = $this->pendingUser();
         if (!$user) {
             return $this->json(['error' => 'expired'], 440);
+        }
+
+        if ($this->throttle->isLocked((int) $user->getId())) {
+            return $this->json(['error' => 'locked'], 429);
         }
 
         if (!$this->passkeys->isAvailable()) {
@@ -111,9 +136,17 @@ class PasskeyController extends AbstractActionController
      */
     public function verifyAction()
     {
+        if (!$this->isSameOriginXhrPost()) {
+            return $this->json(['error' => 'bad_request'], 400);
+        }
+
         $user = $this->pendingUser();
         if (!$user) {
             return $this->json(['error' => 'expired'], 440);
+        }
+
+        if ($this->throttle->isLocked((int) $user->getId())) {
+            return $this->json(['error' => 'locked'], 429);
         }
 
         if (!$this->passkeys->isAvailable()) {
@@ -170,6 +203,8 @@ class PasskeyController extends AbstractActionController
         }
         $this->passkeys->recordUse($credential, $signCount);
 
+        $this->throttle->clear((int) $user->getId());
+
         $remember = !empty($posted['remember_device']) && $this->trustedDevices->isEnabled();
         $this->completeLogin($user, $remember);
 
@@ -197,6 +232,11 @@ class PasskeyController extends AbstractActionController
             $reason
         ));
 
+        $this->throttle->recordFailure((int) $user->getId());
+        if ($this->throttle->isLocked((int) $user->getId())) {
+            return $this->json(['error' => 'locked'], 429);
+        }
+
         if (!$this->pendingLogin->recordFailure()) {
             return $this->json(['error' => 'too_many_attempts'], 429);
         }
@@ -207,16 +247,4 @@ class PasskeyController extends AbstractActionController
         ], 401);
     }
 
-    /**
-     * Written straight onto the response: Omeka registers only
-     * Omeka\ViewApiJsonStrategy, so a JsonModel would not render here.
-     */
-    protected function json($data, int $status = 200)
-    {
-        $response = $this->getResponse();
-        $response->setStatusCode($status);
-        $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
-        $response->setContent(json_encode($data));
-        return $response;
-    }
 }

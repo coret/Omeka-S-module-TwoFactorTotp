@@ -11,6 +11,7 @@ use Omeka\Mvc\Exception\PermissionDeniedException;
 use TwoFactorTotp\Entity\TrustedDevice;
 use TwoFactorTotp\Entity\WebAuthnCredential;
 use TwoFactorTotp\Stdlib\ChallengeStore;
+use TwoFactorTotp\Stdlib\PasswordConfirmation;
 use TwoFactorTotp\Form\ConfirmOtpForm;
 use TwoFactorTotp\Form\PasswordConfirmForm;
 use TwoFactorTotp\Service\PasskeyManager;
@@ -25,6 +26,8 @@ use TwoFactorTotp\Service\TrustedDeviceManager;
  */
 class TotpController extends AbstractActionController
 {
+    use \TwoFactorTotp\Controller\JsonEndpointTrait;
+
     protected EntityManager $entityManager;
 
     protected TotpManager $totpManager;
@@ -37,13 +40,16 @@ class TotpController extends AbstractActionController
 
     protected ChallengeStore $challenges;
 
+    protected PasswordConfirmation $passwordConfirmation;
+
     public function __construct(
         EntityManager $entityManager,
         TotpManager $totpManager,
         TrustedDeviceManager $trustedDevices,
         SecondFactorRegistry $registry,
         PasskeyManager $passkeys,
-        ChallengeStore $challenges
+        ChallengeStore $challenges,
+        PasswordConfirmation $passwordConfirmation
     ) {
         $this->entityManager = $entityManager;
         $this->totpManager = $totpManager;
@@ -51,16 +57,24 @@ class TotpController extends AbstractActionController
         $this->registry = $registry;
         $this->passkeys = $passkeys;
         $this->challenges = $challenges;
+        $this->passwordConfirmation = $passwordConfirmation;
     }
 
     // ---------------------------------------------------------------- passkeys
 
     /**
      * List this account's passkeys, and register another.
+     *
+     * Behind a password prompt, because everything on this page changes what
+     * protects the account. See requirePasswordConfirmation().
      */
     public function passkeysAction()
     {
         $user = $this->requireSelf();
+
+        if ($prompt = $this->requirePasswordConfirmation($user, 'passkeys')) {
+            return $prompt;
+        }
 
         $view = new ViewModel;
         $view->setVariable('user', $user);
@@ -80,6 +94,13 @@ class TotpController extends AbstractActionController
     {
         $user = $this->requireSelf();
 
+        if (!$this->isSameOriginXhrPost()) {
+            return $this->json(['error' => 'bad_request'], 400);
+        }
+        if (!$this->passwordConfirmation->isConfirmed((int) $user->getId())) {
+            return $this->json(['error' => 'confirm_password'], 403);
+        }
+
         if (!$this->passkeys->isAvailable()) {
             return $this->json(['error' => 'unavailable'], 503);
         }
@@ -96,6 +117,16 @@ class TotpController extends AbstractActionController
     public function passkeyVerifyAction()
     {
         $user = $this->requireSelf();
+
+        if (!$this->isSameOriginXhrPost()) {
+            return $this->json(['error' => 'bad_request'], 400);
+        }
+        // The registration is only stored if the password was confirmed for
+        // *this* account within the window. Without it a hijacked session could
+        // plant a factor that then survives the victim changing their password.
+        if (!$this->passwordConfirmation->isConfirmed((int) $user->getId())) {
+            return $this->json(['error' => 'confirm_password'], 403);
+        }
 
         if (!$this->passkeys->isAvailable()) {
             return $this->json(['error' => 'unavailable'], 503);
@@ -177,6 +208,12 @@ class TotpController extends AbstractActionController
             return $this->redirect()->toRoute('admin/two-factor', ['action' => 'passkeys']);
         }
 
+        // Removing a factor is as much a change to the account's protection as
+        // adding one, so it is held to the same standard.
+        if ($prompt = $this->requirePasswordConfirmation($user, 'passkeys')) {
+            return $prompt;
+        }
+
         $form = $this->getForm(ConfirmForm::class);
         $form->setData($this->params()->fromPost());
         if (!$form->isValid()) {
@@ -199,19 +236,6 @@ class TotpController extends AbstractActionController
         }
 
         return $this->redirect()->toRoute('admin/two-factor', ['action' => 'passkeys']);
-    }
-
-    /**
-     * Omeka registers only Omeka\ViewApiJsonStrategy, so a JsonModel would not
-     * render here.
-     */
-    protected function json($data, int $status = 200)
-    {
-        $response = $this->getResponse();
-        $response->setStatusCode($status);
-        $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
-        $response->setContent(json_encode($data));
-        return $response;
     }
 
     /**
@@ -267,7 +291,7 @@ class TotpController extends AbstractActionController
         $view = new ViewModel;
         $view->setVariable('user', $user);
         $view->setVariable('form', $form);
-        $view->setVariable('secret', $enrollment->getSecret());
+        $view->setVariable('secret', $this->totpManager->getPlainSecret($enrollment));
         $view->setVariable('provisioningUri', $this->totpManager->getProvisioningUri($enrollment));
         $view->setVariable('isForced', $this->registry->isRoleForced($user));
         return $view;
@@ -305,7 +329,13 @@ class TotpController extends AbstractActionController
                     return $this->redirect()->toRoute('admin/two-factor', ['action' => 'disable']);
                 }
 
-                $this->totpManager->disable($user);
+                // Recovery codes are kept if a passkey (or anything else) is
+                // still enrolled: they are the fallback for whatever remains,
+                // not for TOTP alone.
+                $this->totpManager->disable($user, false);
+                if (!$this->registry->hasAnyEnrolled($user)) {
+                    $this->totpManager->deleteRecoveryCodes($user);
+                }
                 $this->logger()->warn(sprintf(
                     'TwoFactorTotp: user "%s" (id %s) disabled two-factor authentication.',
                     $user->getEmail(),
@@ -459,14 +489,20 @@ class TotpController extends AbstractActionController
         if ($this->getRequest()->isPost()) {
             $form->setData($this->params()->fromPost());
             if ($form->isValid()) {
-                $this->totpManager->disable($targetUser);
+                // Every factor, not just TOTP. This is the escape hatch for
+                // somebody who cannot get in, so leaving their passkeys behind
+                // would leave them exactly as locked out as before.
+                $this->totpManager->disable($targetUser, true);
+                $removedPasskeys = $this->passkeys->removeAllForUser($targetUser);
 
                 $this->logger()->warn(sprintf(
-                    'TwoFactorTotp: user "%s" (id %s) reset two-factor authentication for "%s" (id %s).',
+                    'TwoFactorTotp: user "%s" (id %s) reset two-factor authentication for "%s" (id %s), '
+                    . 'removing %d passkey(s).',
                     $this->identity() ? $this->identity()->getEmail() : 'unknown',
                     $this->identity() ? $this->identity()->getId() : '?',
                     $targetUser->getEmail(),
-                    $targetUser->getId()
+                    $targetUser->getId(),
+                    $removedPasskeys
                 ));
 
                 $this->notifyReset($targetUser);
@@ -485,7 +521,10 @@ class TotpController extends AbstractActionController
         $view = new ViewModel;
         $view->setVariable('targetUser', $targetUser);
         $view->setVariable('form', $form);
-        $view->setVariable('isEnabled', $this->totpManager->isEnabled($targetUser));
+        // Any factor, not just TOTP: a passkey-only account has something to
+        // reset, and telling the administrator otherwise was how it stayed
+        // locked out.
+        $view->setVariable('isEnabled', $this->registry->hasAnyEnrolled($targetUser));
         return $view;
     }
 
@@ -503,6 +542,58 @@ class TotpController extends AbstractActionController
             throw new PermissionDeniedException('Not logged in.');
         }
         return $user;
+    }
+
+    /**
+     * Hold a page behind the account password.
+     *
+     * Returns a view model to render — the password prompt — when the password
+     * has not been confirmed recently, and null when the caller may carry on.
+     * The `if ($prompt = ...) return $prompt;` shape at the call sites is
+     * deliberate: forgetting the return is then a visibly broken page rather
+     * than a silently unguarded one.
+     *
+     * The POST is handled here so every guarded action gets identical
+     * behaviour, including that a wrong password re-renders the prompt instead
+     * of falling through.
+     *
+     * @param string $action Where to send the form back to.
+     * @return ViewModel|null
+     */
+    protected function requirePasswordConfirmation(User $user, string $action)
+    {
+        if ($this->passwordConfirmation->isConfirmed((int) $user->getId())) {
+            return null;
+        }
+
+        $form = $this->getForm(PasswordConfirmForm::class, [
+            'button_label' => 'Confirm', // @translate
+        ]);
+        $form->setAttribute('action', $this->url()->fromRoute('admin/two-factor', ['action' => $action]));
+
+        if ($this->getRequest()->isPost()) {
+            $form->setData($this->params()->fromPost());
+            if ($form->isValid()) {
+                $data = $form->getData();
+                if ($user->verifyPassword($data['password'])) {
+                    $this->passwordConfirmation->confirm((int) $user->getId());
+                    return null;
+                }
+                $this->messenger()->addError('The password entered was invalid.'); // @translate
+            } else {
+                // A post that is not the password form — the passkey remove
+                // button, say — must not be reported as a bad password.
+                if (null !== $this->params()->fromPost('password')) {
+                    $this->messenger()->addFormErrors($form);
+                }
+            }
+        }
+
+        $view = new ViewModel;
+        $view->setTemplate('two-factor-totp/admin/totp/confirm-password');
+        $view->setVariable('user', $user);
+        $view->setVariable('form', $form);
+        return $view;
     }
 
     protected function redirectToUser(User $user)

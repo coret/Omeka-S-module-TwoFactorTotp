@@ -25,6 +25,29 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
     require_once __DIR__ . '/vendor/autoload.php';
 }
 
+// And the module's *own* classes, for the same reason and then some.
+//
+// Omeka registers a module's autoloader (AbstractModule::getAutoloaderConfig)
+// only for modules it loads, and it does not load one that is awaiting upgrade:
+// Omeka\Module\Manager::getModuleObject() falls back to `new TwoFactorTotp\Module`
+// and calls upgrade() on that. At that moment nothing maps TwoFactorTotp\* to
+// src/, so upgrade() cannot so much as name a class of ours — it fails, the new
+// version is never recorded, and the module stays out of service permanently.
+//
+// Registering it here costs nothing when Omeka has already done so (require_once
+// either way) and makes upgrade() able to use the same code as everything else,
+// instead of being a dialect where only Module.php exists.
+spl_autoload_register(function (string $class): void {
+    $prefix = __NAMESPACE__ . '\\';
+    if (0 !== strncmp($class, $prefix, strlen($prefix))) {
+        return;
+    }
+    $file = __DIR__ . '/src/' . str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
+    if (is_readable($file)) {
+        require_once $file;
+    }
+});
+
 /**
  * TwoFactorTotp — second-factor authentication with time-based one-time
  * passwords (RFC 6238) from an authenticator app.
@@ -79,7 +102,7 @@ class Module extends AbstractModule
             CREATE TABLE IF NOT EXISTS two_factor_totp_enrollment (
                 id INT AUTO_INCREMENT NOT NULL,
                 user_id INT NOT NULL,
-                secret VARCHAR(64) NOT NULL,
+                secret VARCHAR(255) NOT NULL,
                 is_confirmed TINYINT(1) NOT NULL,
                 last_counter BIGINT DEFAULT NULL,
                 recovery_codes JSON NOT NULL,
@@ -237,6 +260,56 @@ class Module extends AbstractModule
                 'ALTER TABLE two_factor_totp_enrollment MODIFY recovery_codes JSON NULL DEFAULT NULL'
             );
         }
+
+        if (version_compare((string) $oldVersion, '0.3.0', '<')) {
+            // Room for the encrypted form of the secret: a prefix plus base64
+            // of nonce, tag and ciphertext, about 87 characters. Widening is
+            // safe to repeat and cannot lose data.
+            $connection->executeStatement(
+                'ALTER TABLE two_factor_totp_enrollment MODIFY secret VARCHAR(255) NOT NULL'
+            );
+
+            // Convert what is already there, if a key has been configured. Rows
+            // missed here — because the key was added later — convert
+            // themselves the next time their owner logs in; see
+            // TotpManager::encryptStoredSecretIfNeeded().
+            $this->encryptStoredSecrets($serviceLocator, $connection);
+        }
+    }
+
+    /**
+     * Encrypt any plaintext TOTP secret in place.
+     *
+     * @return int Number encrypted.
+     */
+    protected function encryptStoredSecrets($serviceLocator, \Doctrine\DBAL\Connection $connection): int
+    {
+        // Built from config, never fetched from the container: at this point
+        // the module is in `needs_upgrade` and none of its services exist. See
+        // SecretCipher::fromConfig().
+        $cipher = Service\SecretCipher::fromConfig($serviceLocator->get('Config'));
+        if (!$cipher->isEnabled()) {
+            return 0;
+        }
+
+        $rows = $connection->fetchAllAssociative(
+            'SELECT id, secret FROM two_factor_totp_enrollment'
+        );
+
+        $encrypted = 0;
+        foreach ($rows as $row) {
+            $secret = (string) $row['secret'];
+            if ('' === $secret || Service\SecretCipher::isEncrypted($secret)) {
+                continue;
+            }
+            $connection->executeStatement(
+                'UPDATE two_factor_totp_enrollment SET secret = ? WHERE id = ?',
+                [$cipher->encrypt($secret), (int) $row['id']]
+            );
+            $encrypted++;
+        }
+
+        return $encrypted;
     }
 
     /**
@@ -482,17 +555,25 @@ class Module extends AbstractModule
         /** @var TotpManager $totpManager */
         $totpManager = $services->get(TotpManager::class);
         $trustedDevices = $services->get(Service\TrustedDeviceManager::class);
+        $passkeys = $services->get(Service\PasskeyManager::class);
+        $registry = $services->get(Service\SecondFactorRegistry::class);
 
         echo $view->partial('two-factor-totp/common/user-tab', [
             'user' => $user,
             'userEntity' => $userEntity,
             'isSelf' => $isSelf,
             'isEnabled' => $totpManager->isEnabled($userEntity),
-            'isForced' => $services->get(Service\SecondFactorRegistry::class)->isRoleForced($userEntity),
+            // Asked of the registry, so an account whose only factor is a
+            // passkey does not read as "not enabled".
+            'hasAnyFactor' => $registry->hasAnyEnrolled($userEntity),
+            'isForced' => $registry->isRoleForced($userEntity),
             'recoveryCodesRemaining' => $totpManager->countRecoveryCodes($userEntity),
             'lowWaterMark' => TotpManager::RECOVERY_LOW_WATER_MARK,
             'deviceCount' => count($trustedDevices->listForUser($userEntity)),
-            'passkeyCount' => $services->get(Service\PasskeyManager::class)->countForUser($userEntity),
+            'passkeyCount' => $passkeys->countForUser($userEntity),
+            // Hidden only when the WebAuthn library is genuinely absent — never
+            // because of some unrelated setting.
+            'passkeysAvailable' => $passkeys->isAvailable(),
             'trustedDevicesEnabled' => $trustedDevices->isEnabled(),
             'canReset' => $view->userIsAllowed($userEntity, 'change-role-admin'),
         ]);
@@ -518,6 +599,10 @@ class Module extends AbstractModule
             // Clock drift is the single most common cause of "every code is
             // wrong", so put the server's own time in front of the admin.
             'serverTime' => (new \DateTime('now'))->format('Y-m-d H:i:s T'),
+            // Encryption is opt-in and configured in a file, so this page is
+            // the only place an administrator would ever find out that it is
+            // available and currently off.
+            'secretsEncrypted' => $services->get(Service\SecretCipher::class)->isEnabled(),
         ]);
     }
 

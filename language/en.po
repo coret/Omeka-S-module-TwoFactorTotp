@@ -11,22 +11,6 @@ msgstr ""
 "Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Authentication code"
-msgstr "Authentication code"
-
-msgid "The 6-digit code from your authenticator app."
-msgstr "The 6-digit code from your authenticator app."
-
-#, php-format
-msgid "Remember this device for %d days"
-msgstr "Remember this device for %d days"
-
-msgid "Only tick this on a device that is yours alone."
-msgstr "Only tick this on a device that is yours alone."
-
-msgid "Verify"
-msgstr "Verify"
-
 msgid "Issuer name"
 msgstr "Issuer name"
 
@@ -42,8 +26,8 @@ msgstr "The domain passkeys are bound to. Leave empty to use the host the site i
 msgid "Require two-factor authentication for these roles"
 msgstr "Require two-factor authentication for these roles"
 
-msgid "Users with a selected role must set up two-factor authentication before they can use the admin interface. Existing sessions are not affected."
-msgstr "Users with a selected role must set up two-factor authentication before they can use the admin interface. Existing sessions are not affected."
+msgid "Users with a selected role are held on the setup page, anywhere on the site, until they have enrolled in a second factor. Any factor satisfies it. Existing sessions are not affected."
+msgstr "Users with a selected role are held on the setup page, anywhere on the site, until they have enrolled in a second factor. Any factor satisfies it. Existing sessions are not affected."
 
 msgid "Remember a device for (days)"
 msgstr "Remember a device for (days)"
@@ -69,6 +53,34 @@ msgstr "Wrong codes allowed per login"
 msgid "After this many wrong codes the login is discarded and the user starts again from the password screen."
 msgstr "After this many wrong codes the login is discarded and the user starts again from the password screen."
 
+msgid "Failed attempts before the account is locked"
+msgstr "Failed attempts before the account is locked"
+
+msgid "Counted per account rather than per login, so starting a new login does not hand out a fresh set of guesses. Recovery codes are never locked, so nobody is left with no way in. Set to 0 to turn the lockout off."
+msgstr "Counted per account rather than per login, so starting a new login does not hand out a fresh set of guesses. Recovery codes are never locked, so nobody is left with no way in. Set to 0 to turn the lockout off."
+
+msgid "How long the account stays locked (seconds)"
+msgstr "How long the account stays locked (seconds)"
+
+msgid "The length of the first lockout. Each further lockout on the same account is twice as long as the one before, up to a day."
+msgstr "The length of the first lockout. Each further lockout on the same account is twice as long as the one before, up to a day."
+
+msgid "Authentication code"
+msgstr "Authentication code"
+
+msgid "The 6-digit code from your authenticator app."
+msgstr "The 6-digit code from your authenticator app."
+
+#, php-format
+msgid "Remember this device for %d days"
+msgstr "Remember this device for %d days"
+
+msgid "Only tick this on a device that is yours alone."
+msgstr "Only tick this on a device that is yours alone."
+
+msgid "Verify"
+msgstr "Verify"
+
 msgid "Confirm"
 msgstr "Confirm"
 
@@ -92,6 +104,10 @@ msgstr "One of the codes you saved when you set up two-factor authentication. Ea
 
 msgid "Use recovery code"
 msgstr "Use recovery code"
+
+#, php-format
+msgid "Too many failed attempts. This account cannot use a code for another %d minutes. A recovery code still works."
+msgstr "Too many failed attempts. This account cannot use a code for another %d minutes. A recovery code still works."
 
 msgid "Successfully logged in"
 msgstr "Successfully logged in"
@@ -206,8 +222,8 @@ msgstr "A passkey lets you finish logging in with a hardware key, a fingerprint 
 msgid "Add a passkey"
 msgstr "Add a passkey"
 
-msgid "Add a second step to your login using an authenticator app on your phone, so a stolen password is not enough on its own."
-msgstr "Add a second step to your login using an authenticator app on your phone, so a stolen password is not enough on its own."
+msgid "Add a second step to your login — a code from an authenticator app on your phone, or a passkey such as a hardware key, Touch ID or Windows Hello — so a stolen password is not enough on its own."
+msgstr "Add a second step to your login — a code from an authenticator app on your phone, or a passkey such as a hardware key, Touch ID or Windows Hello — so a stolen password is not enough on its own."
 
 msgid "Added"
 msgstr "Added"
@@ -317,6 +333,12 @@ msgstr "Server time is %s. If this is more than about half a minute away from re
 msgid "Set up two-factor authentication"
 msgstr "Set up two-factor authentication"
 
+msgid "TOTP secrets are encrypted at rest."
+msgstr "TOTP secrets are encrypted at rest."
+
+msgid "TOTP secrets are stored unencrypted, so read access to the database alone is enough to bypass the second factor. To encrypt them, set twofactortotp.encryption_key in Omeka's config/local.config.php — existing enrollments convert themselves as their owners log in."
+msgstr "TOTP secrets are stored unencrypted, so read access to the database alone is enough to bypass the second factor. To encrypt them, set twofactortotp.encryption_key in Omeka's config/local.config.php — existing enrollments convert themselves as their owners log in."
+
 msgid "That did not work. Try again, or use another way in."
 msgstr "That did not work. Try again, or use another way in."
 
@@ -332,11 +354,11 @@ msgstr "These codes are shown once and cannot be retrieved again. Save them some
 msgid "This browser does not support passkeys."
 msgstr "This browser does not support passkeys."
 
+msgid "This removes the authenticator app from your account and signs out every device you had marked as trusted. If it was your last second factor your recovery codes go with it, and your account will be protected by its password alone."
+msgstr "This removes the authenticator app from your account and signs out every device you had marked as trusted. If it was your last second factor your recovery codes go with it, and your account will be protected by its password alone."
+
 msgid "This removes the second factor from another person’s account. Only do this when you are certain who you are talking to — anyone who can pass this check can take the account over with the password alone."
 msgstr "This removes the second factor from another person’s account. Only do this when you are certain who you are talking to — anyone who can pass this check can take the account over with the password alone."
-
-msgid "This removes the second factor from your account, deletes your recovery codes, and signs out every device you had marked as trusted. Your account will be protected by its password alone."
-msgstr "This removes the second factor from your account, deletes your recovery codes, and signs out every device you had marked as trusted. Your account will be protected by its password alone."
 
 msgid "Touch your key, or use your device unlock."
 msgstr "Touch your key, or use your device unlock."
@@ -366,8 +388,8 @@ msgid "Two-factor authentication is required for your role. You cannot use the a
 msgstr "Two-factor authentication is required for your role. You cannot use the admin interface until you finish this."
 
 #, php-format
-msgid "Two-factor authentication, all recovery codes and all trusted devices will be removed for %s. They will be emailed about it, and the action is written to the log."
-msgstr "Two-factor authentication, all recovery codes and all trusted devices will be removed for %s. They will be emailed about it, and the action is written to the log."
+msgid "Two-factor authentication, all passkeys, all recovery codes and all trusted devices will be removed for %s. They will be emailed about it, and the action is written to the log."
+msgstr "Two-factor authentication, all passkeys, all recovery codes and all trusted devices will be removed for %s. They will be emailed about it, and the action is written to the log."
 
 msgid "Two-step verification"
 msgstr "Two-step verification"
@@ -404,6 +426,9 @@ msgstr "Work laptop"
 
 msgid "You are asked for a code from your authenticator app when you log in."
 msgstr "You are asked for a code from your authenticator app when you log in."
+
+msgid "You are asked for your passkey when you log in."
+msgstr "You are asked for your passkey when you log in."
 
 msgid "Your recovery codes"
 msgstr "Your recovery codes"

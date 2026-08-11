@@ -11,22 +11,6 @@ msgstr ""
 "Language: nl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Authentication code"
-msgstr "Authenticatiecode"
-
-msgid "The 6-digit code from your authenticator app."
-msgstr "De 6-cijferige code uit je authenticator-app."
-
-#, php-format
-msgid "Remember this device for %d days"
-msgstr "Dit apparaat %d dagen onthouden"
-
-msgid "Only tick this on a device that is yours alone."
-msgstr "Vink dit alleen aan op een apparaat dat alleen van jou is."
-
-msgid "Verify"
-msgstr "Verifiëren"
-
 msgid "Issuer name"
 msgstr "Naam van de uitgever"
 
@@ -42,8 +26,8 @@ msgstr "Het domein waaraan passkeys gebonden zijn. Laat leeg om de host te gebru
 msgid "Require two-factor authentication for these roles"
 msgstr "Tweefactorauthenticatie verplichten voor deze rollen"
 
-msgid "Users with a selected role must set up two-factor authentication before they can use the admin interface. Existing sessions are not affected."
-msgstr "Gebruikers met een geselecteerde rol moeten tweefactorauthenticatie instellen voordat ze de beheeromgeving kunnen gebruiken. Bestaande sessies worden niet beïnvloed."
+msgid "Users with a selected role are held on the setup page, anywhere on the site, until they have enrolled in a second factor. Any factor satisfies it. Existing sessions are not affected."
+msgstr "Gebruikers met een geselecteerde rol worden overal op de site op de instelpagina gehouden totdat ze een tweede factor hebben ingesteld. Elke factor voldoet. Bestaande sessies worden niet beïnvloed."
 
 msgid "Remember a device for (days)"
 msgstr "Een apparaat onthouden gedurende (dagen)"
@@ -69,6 +53,34 @@ msgstr "Toegestane foute codes per login"
 msgid "After this many wrong codes the login is discarded and the user starts again from the password screen."
 msgstr "Na dit aantal foute codes wordt de login weggegooid en begint de gebruiker opnieuw bij het wachtwoordscherm."
 
+msgid "Failed attempts before the account is locked"
+msgstr "Mislukte pogingen voordat het account wordt vergrendeld"
+
+msgid "Counted per account rather than per login, so starting a new login does not hand out a fresh set of guesses. Recovery codes are never locked, so nobody is left with no way in. Set to 0 to turn the lockout off."
+msgstr "Geteld per account in plaats van per login, zodat een nieuwe login geen nieuwe reeks pogingen oplevert. Herstelcodes worden nooit vergrendeld, zodat niemand zonder toegang achterblijft. Zet op 0 om de vergrendeling uit te schakelen."
+
+msgid "How long the account stays locked (seconds)"
+msgstr "Hoe lang het account vergrendeld blijft (seconden)"
+
+msgid "The length of the first lockout. Each further lockout on the same account is twice as long as the one before, up to a day."
+msgstr "De duur van de eerste vergrendeling. Elke volgende vergrendeling van hetzelfde account duurt twee keer zo lang als de vorige, tot maximaal een dag."
+
+msgid "Authentication code"
+msgstr "Authenticatiecode"
+
+msgid "The 6-digit code from your authenticator app."
+msgstr "De 6-cijferige code uit je authenticator-app."
+
+#, php-format
+msgid "Remember this device for %d days"
+msgstr "Dit apparaat %d dagen onthouden"
+
+msgid "Only tick this on a device that is yours alone."
+msgstr "Vink dit alleen aan op een apparaat dat alleen van jou is."
+
+msgid "Verify"
+msgstr "Verifiëren"
+
 msgid "Confirm"
 msgstr "Bevestigen"
 
@@ -92,6 +104,10 @@ msgstr "Een van de codes die je hebt opgeslagen toen je tweefactorauthenticatie 
 
 msgid "Use recovery code"
 msgstr "Herstelcode gebruiken"
+
+#, php-format
+msgid "Too many failed attempts. This account cannot use a code for another %d minutes. A recovery code still works."
+msgstr "Te veel mislukte pogingen. Dit account kan nog %d minuten geen code gebruiken. Een herstelcode werkt wel."
 
 msgid "Successfully logged in"
 msgstr "Succesvol ingelogd"
@@ -206,8 +222,8 @@ msgstr "Met een passkey rond je het inloggen af met een hardwaresleutel, een vin
 msgid "Add a passkey"
 msgstr "Een passkey toevoegen"
 
-msgid "Add a second step to your login using an authenticator app on your phone, so a stolen password is not enough on its own."
-msgstr "Voeg een tweede stap toe aan je login met een authenticator-app op je telefoon, zodat een gestolen wachtwoord op zichzelf niet genoeg is."
+msgid "Add a second step to your login — a code from an authenticator app on your phone, or a passkey such as a hardware key, Touch ID or Windows Hello — so a stolen password is not enough on its own."
+msgstr "Voeg een tweede stap toe aan je login — een code uit een authenticator-app op je telefoon, of een passkey zoals een hardwaresleutel, Touch ID of Windows Hello — zodat een gestolen wachtwoord op zichzelf niet genoeg is."
 
 msgid "Added"
 msgstr "Toegevoegd"
@@ -317,6 +333,12 @@ msgstr "De servertijd is %s. Wijkt dit meer dan ongeveer een halve minuut af van
 msgid "Set up two-factor authentication"
 msgstr "Tweefactorauthenticatie instellen"
 
+msgid "TOTP secrets are encrypted at rest."
+msgstr "TOTP-sleutels worden versleuteld opgeslagen."
+
+msgid "TOTP secrets are stored unencrypted, so read access to the database alone is enough to bypass the second factor. To encrypt them, set twofactortotp.encryption_key in Omeka's config/local.config.php — existing enrollments convert themselves as their owners log in."
+msgstr "TOTP-sleutels worden onversleuteld opgeslagen, waardoor alleen leestoegang tot de database al genoeg is om de tweede factor te omzeilen. Stel twofactortotp.encryption_key in in config/local.config.php van Omeka om ze te versleutelen — bestaande registraties worden vanzelf omgezet zodra de eigenaar inlogt."
+
 msgid "That did not work. Try again, or use another way in."
 msgstr "Dat werkte niet. Probeer het opnieuw of gebruik een andere manier om in te loggen."
 
@@ -332,11 +354,11 @@ msgstr "Deze codes worden één keer getoond en kunnen daarna niet meer worden o
 msgid "This browser does not support passkeys."
 msgstr "Deze browser ondersteunt geen passkeys."
 
+msgid "This removes the authenticator app from your account and signs out every device you had marked as trusted. If it was your last second factor your recovery codes go with it, and your account will be protected by its password alone."
+msgstr "Hiermee verwijder je de authenticator-app van je account en worden alle apparaten die je als vertrouwd had gemarkeerd uitgelogd. Als het je laatste tweede factor was, gaan je herstelcodes mee en wordt je account daarna alleen nog door het wachtwoord beschermd."
+
 msgid "This removes the second factor from another person’s account. Only do this when you are certain who you are talking to — anyone who can pass this check can take the account over with the password alone."
 msgstr "Hiermee verwijder je de tweede factor van het account van iemand anders. Doe dit alleen als je zeker weet met wie je spreekt — wie deze controle passeert, kan het account met alleen het wachtwoord overnemen."
-
-msgid "This removes the second factor from your account, deletes your recovery codes, and signs out every device you had marked as trusted. Your account will be protected by its password alone."
-msgstr "Hiermee verwijder je de tweede factor van je account, worden je herstelcodes gewist en worden alle apparaten die je als vertrouwd had gemarkeerd uitgelogd. Je account wordt dan alleen nog door het wachtwoord beschermd."
 
 msgid "Touch your key, or use your device unlock."
 msgstr "Raak je sleutel aan of gebruik de ontgrendeling van je apparaat."
@@ -366,8 +388,8 @@ msgid "Two-factor authentication is required for your role. You cannot use the a
 msgstr "Tweefactorauthenticatie is verplicht voor jouw rol. Je kunt de beheeromgeving niet gebruiken totdat je dit hebt afgerond."
 
 #, php-format
-msgid "Two-factor authentication, all recovery codes and all trusted devices will be removed for %s. They will be emailed about it, and the action is written to the log."
-msgstr "Tweefactorauthenticatie, alle herstelcodes en alle vertrouwde apparaten worden verwijderd voor %s. Diegene krijgt hierover een e-mail en de actie wordt in het log vastgelegd."
+msgid "Two-factor authentication, all passkeys, all recovery codes and all trusted devices will be removed for %s. They will be emailed about it, and the action is written to the log."
+msgstr "Tweefactorauthenticatie, alle passkeys, alle herstelcodes en alle vertrouwde apparaten worden verwijderd voor %s. Diegene krijgt hierover een e-mail en de actie wordt in het log vastgelegd."
 
 msgid "Two-step verification"
 msgstr "Verificatie in twee stappen"
@@ -404,6 +426,9 @@ msgstr "Werklaptop"
 
 msgid "You are asked for a code from your authenticator app when you log in."
 msgstr "Bij het inloggen wordt om een code uit je authenticator-app gevraagd."
+
+msgid "You are asked for your passkey when you log in."
+msgstr "Er wordt om je passkey gevraagd wanneer je inlogt."
 
 msgid "Your recovery codes"
 msgstr "Je herstelcodes"
